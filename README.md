@@ -1,2 +1,2 @@
 # theIGF
-pthon code to run The IGF website
+python code to run The IGF website
