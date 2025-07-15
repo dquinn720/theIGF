@@ -1,5 +1,5 @@
 #app.yaml
-runtime: python39 # or another supported version
+runtime: python311 # or another supported version
 
 instance_class: F2
 
