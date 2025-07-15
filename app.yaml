@@ -1,6 +1,5 @@
 #app.yaml
-runtime: python311
-entrypoint: gunicorn -b :$PORT main:app
+runtime: python39
 
 instance_class: F2
 
