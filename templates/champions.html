@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>IGF Stats - Champions</title>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="IGF Stats - Champions">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+    
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+
+
+   
+  </head>
+  <body data-home-page="champions.html" data-home-page-title="IGF Stats - Champions">
+  
+  <div class= "header-image"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <div class="topnav" id="myTopnav">
+      <a href="/">Current Board</a>
+      <a href="past">Past Boards</a>
+      <div class="subnav">
+    			<button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
+    			<div class="subnav-content">
+      		<a href="champions">Champions</a>\
+			<a href="igf_results">IGF Results</a>
+			<a href="golfer_results">Golfer Results</a>
+			<a href="cum">CUM</a>
+      		<a href="hard_on" >HARD ON</a>
+  		  </div>
+	  </div>
+      <a href="research">Player Research</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+
+<br>
+
+<div>
+    <p><strong> IGF Results - Champions</strong></p>
+    <br>
+    <div>
+              <table class = "sortable">
+			<tr>
+                      {% for header in champ_heads %}
+                      <th> {{header | safe}} </th>
+                      {% endfor %}
+                  </tr>
+                  <tr>
+                      {% for header in champ_heads %}
+				{% if header == 'THE PLAYERS Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/the_players.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'The Masters' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/the_masters.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'PGA Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/pga_championship.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'U.S. Open' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/us_open.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'The Open Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/open_championship.png') }}" style="height:100px"/> </th>
+				{% else %}
+					<th></th>
+			      {% endif %}
+                      {% endfor %}
+                  </tr>
+
+                  {% for row in champs %}
+                  <tr>
+                      {% for cell in row %}
+				{% if loop.index == 1 %}
+                      		<td>{{ cell | safe}} </td>
+				{% elif loop.index == 2 %}
+					<td><b>{{ row[1] | safe}}</b><br><i>({{ row[2] | safe}})</i> </td>
+				{% elif loop.index == 4 %}
+					<td><b>{{ row[3] | safe}}</b><br><i>({{ row[4] | safe}})</i> </td>
+				{% elif loop.index == 6 %}
+					<td><b>{{ row[5] | safe}}</b><br><i>({{ row[6] | safe}})</i> </td>
+				{% elif loop.index == 8 %}
+					<td><b>{{ row[7] | safe}}</b><br><i>({{ row[8] | safe}})</i> </td>
+				{% elif loop.index == 10 %}
+					<td><b>{{ row[9] | safe}}</b><br><i>({{ row[10] | safe}})</i> </td>
+				{% endif %}
+                      {% endfor %}
+
+                  </tr>
+                  {% endfor %}
+             </table>
+            </div>
+</div>
+
+   
+</body></html>

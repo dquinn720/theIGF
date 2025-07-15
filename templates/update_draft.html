@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>IGF Post Results</title>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="Update Current Draft">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+
+    <script src="{{url_for('static', filename='sorttable.js')}}"></script>>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+    
+    <script>
+    function myFunction() {
+          var x = document.getElementById("myTopnav");
+          if (x.className === "topnav") {
+            x.className += " responsive";
+          } else {
+            x.className = "topnav";
+          }
+        }
+  </script>
+        
+   
+  </head>
+  <body data-home-page="update_draft.html" data-home-page-title="Update Current Draft">
+  
+  <div class= "header-image"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <div class="topnav" id="myTopnav">
+      <a href="/" class="active">Current Board</a>
+      <a href="past">Past Boards</a>
+      <div class="subnav">
+    			<button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
+    			<div class="subnav-content">
+      		<a href="champions">Champions</a>\
+			<a href="igf_results">IGF Results</a>
+			<a href="golfer_results">Golfer Results</a>
+			<a href="cum">CUM</a>
+      		<a href="hard_on" >HARD ON</a>
+  		  </div>
+	  </div>
+      <a href="research">Player Research</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+  <br>
+<div class="container">
+
+        <form action="{{ url_for('update_draft')}}" method="post">
+        <label for="draftYear">Draft Year:</label>
+            <select name="dYear">
+ 	      <option value="2025">2025</option>
+ 	      <option value="2024">2024</option>
+	      <option value="2023">2023</option>
+	      <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+            </select>
+        
+        <label for="tournament">Tournament:</label>
+            <select name="tourney">
+              <option value="The Masters">The Masters</option>
+              <option value="PGA Championship">PGA Championship</option>
+              <option value="THE PLAYERS Championship">THE PLAYERS Chapionship</option>
+              <option value="U.S. Open">U.S. Open</option>
+              <option value="The Open Championship">The Open Championship</option>
+            </select>
+     	
+	<button type="submit" name="fetch">Update Current Draft</button>
+
+        
+     </div>  
+     <br>  
+
+<div class="headers">
+<p><strong>Current Draft:</strong></p>
+</div>
+<br>
+  <div class = "tables">
+      <table class="sortable">
+          <tr>
+              {% for header in current_draft_heads %}
+              <th> {{header | safe}} </th>
+              {% endfor%}
+          </tr>
+          <tr>
+              <td>{{ current_draft_year | safe }} </td>
+		  <td>{{ current_draft_tourney | safe }} </td>
+          </tr>
+     </table>
+    </div>
+<br>
+</body></html>

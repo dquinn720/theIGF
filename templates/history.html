@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>IGF History</title>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="IGF History">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+    
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+
+    <script>
+    function myFunction() {
+          var x = document.getElementById("myTopnav");
+          if (x.className === "topnav") {
+            x.className += " responsive";
+          } else {
+            x.className = "topnav";
+          }
+        }
+
+function openTab(evt, tabName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+        
+</script>
+   
+  </head>
+  <body data-home-page="history.html" data-home-page-title="IGF History">
+  
+  <div class= "header-image"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <div class="topnav" id="myTopnav">
+      <a href="/">Current Board</a>
+      <a href="past">Past Boards</a>
+      <div class="subnav">
+    			<button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
+    			<div class="subnav-content">
+      		<a href="champions">Champions</a>\
+			<a href="igf_results">IGF Results</a>
+			<a href="golfer_results">Golfer Results</a>
+			<a href="cum">CUM</a>
+      		<a href="hard_on" >HARD ON</a>
+  		  </div>
+	  </div>
+	<a href="history" class="active"> IGF History</a>
+      <a href="research">Player Research</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+
+<br>
+
+<!-- Tab links -->
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event, 'Tournaments')">Tournaments</button>
+  <button class="tablinks" onclick="openTab(event, 'CUM')">CUM</button>
+</div>
+
+<!-- Tab content -->
+<div id="Tournaments" class="tabcontent">
+  <h3>Tournament History</h3>
+   <p>London is the capital of England.</p>
+</div>
+
+<div id="CUM" class="tabcontent">
+  <h3>CUM</h3>
+  <p>Paris is the capital of France.</p>
+</div>
+   
+</body></html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>Update Current Draft</title>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="Update Current Draft">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+
+    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+    
+    <script>
+    function myFunction() {
+          var x = document.getElementById("myTopnav");
+          if (x.className === "topnav") {
+            x.className += " responsive";
+          } else {
+            x.className = "topnav";
+          }
+        }
+  </script>
+        
+   
+  </head>
+  <body data-home-page="draft_order.html" data-home-page-title="Submit Draft Order">
+  
+  <div class= "header-image"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <div class="topnav" id="myTopnav">
+      <a href="/" class="active">Current Board</a>
+      <a href="past">Past Boards</a>
+      <a href="stats">IGF Stats</a>
+      <a href="research">Player Research</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+  <br>
+<div class="container">
+
+        <form action="{{ url_for('draft_order')}}" method="post"  onsubmit="return confirm('Are you sure you want to submit this draft order?')">
+        <label for="draftYear">Draft Year:</label>
+            <select name="dYear">
+	      <option value="2025">2025</option>
+	      <option value="2024">2024</option>
+	      <option value="2023">2023</option>
+	      <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+              <option value="2014">2014</option>
+              <option value="2013">2013</option>
+
+            </select>
+        
+        <label for="tournament">Tournament:</label>
+            <select name="tourney">
+              <option value="The Masters">The Masters</option>
+              <option value="PGA Championship">PGA Championship</option>
+              <option value="THE PLAYERS Championship">THE PLAYERS Chapionship</option>
+              <option value="U.S. Open">U.S. Open</option>
+              <option value="The Open Championship">The Open Championship</option>
+            </select>
+	<br>
+	<label for="B. Love">B. Love:</label>
+            <select name="love">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+     	
+	<br>
+	<label for="D. Quinn">D. Quinn:</label>
+            <select name="quinn">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="D. Virtue">D. Virtue:</label>
+            <select name="virtue">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="J. Arpaia">J. Arpaia:</label>
+            <select name="arpaia">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="J. Brackmann">J. Brackmann:</label>
+            <select name="brackmann">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="J. Nieting">J. Nieting:</label>
+            <select name="nieting">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="M. Massa">M. Massa:</label>
+            <select name="massa">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="R. Ross">R. Ross:</label>
+            <select name="ross">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="T. Morso">T. Morso:</label>
+            <select name="morso">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+	<label for="T. Olsen">T. Olsen:</label>
+            <select name="olsen">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+            </select>
+	<br>
+
+	<button type="submit" name="fetch">Submit Draft Order</button>
+
+        
+     </div>  
+
+</body></html>

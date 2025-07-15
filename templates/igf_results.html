@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;" lang="en"><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <title>IGF Stats - Champions</title>
+    <meta name="theme-color" content="#478ac9">
+    <meta property="og:title" content="IGF Stats - Tournaments">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+    
+    <script src="{{url_for('static', filename='sorttable.js')}}"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
+
+
+   
+  </head>
+  <body data-home-page="igf_results.html" data-home-page-title="IGF Stats - Tournaments">
+  
+  <div class= "header-image"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <div class="topnav" id="myTopnav">
+      <a href="/">Current Board</a>
+      <a href="past">Past Boards</a>
+      <div class="subnav">
+    			<button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
+    			<div class="subnav-content">
+      		<a href="champions">Champions</a>\
+			<a href="igf_results">IGF Results</a>
+			<a href="golfer_results">Golfer Results</a>
+			<a href="cum">CUM</a>
+      		<a href="hard_on" >HARD ON</a>
+  		  </div>
+	  </div>
+      <a href="research">Player Research</a>
+      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+        <i class="fa fa-bars"></i>
+      </a>
+    </div>
+
+<br>
+
+	<div class="container">
+	<form action="{{ url_for('igf_results')}}" method="post">
+        <label for="view_by">View By:</label>
+            <select name="view_by">
+              	<option value="first">Winner</option>
+		<option value="second">Runner Up</option>
+              	<option value="money">$$$$</option>
+            </select>
+        <button type="submit">Get Results</button>
+        </div>  
+     <br>
+
+<div>
+    <p><strong> IGF Results - Tournament {{head_str | safe}} </strong></p>
+    <br>
+    <div>
+              <table class = "sortable">
+			<tr>
+                      {% for header in igf_heads %}
+                      <th> {{header | safe}} </th>
+                      {% endfor %}
+                  </tr>
+                  <tr>
+                      {% for header in igf_heads %}
+				{% if header == 'THE PLAYERS Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/the_players.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'The Masters' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/the_masters.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'PGA Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/pga_championship.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'U.S. Open' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/us_open.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'The Open Championship' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/open_championship.png') }}" style="height:100px"/> </th>
+			{% elif header == 'CUM' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/cum.png') }}" style="height:100px"/> </th>
+				{% else %}
+					<th></th>
+			      {% endif %}
+                      {% endfor %}
+                  </tr>
+
+                  {% for row in results %}
+                  <tr>
+                      {% for cell in row %}
+                      		<td>{{ cell | safe}} </td>
+                      {% endfor %}
+
+                  </tr>
+                  {% endfor %}
+             </table>
+            </div>
+</div>
+
+   
+</body></html>

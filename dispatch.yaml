@@ -1,0 +1,4 @@
+#dispatch.yaml
+dispatch:
+  - url: igflive.com/*
+    service: default
