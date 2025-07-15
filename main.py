@@ -238,5 +238,3 @@ def research():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-wsgi_app = app
