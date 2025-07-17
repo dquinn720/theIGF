@@ -140,7 +140,7 @@ table.sortable tr:hover {
 
 /* Icon images in tables */
 .icon-img {
-  width: 24px;
+  width: 32px;
   vertical-align: middle;
   margin-right: .5rem;
 }

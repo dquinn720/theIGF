@@ -55,13 +55,20 @@
 
   <!-- Navigation toggle + Select2 init -->
   <script>
-    function toggleNav() {
-      document.getElementById("myTopnav").classList.toggle("responsive");
-    }
-    $(function() {
-      $('.js-example-basic-single').select2({ width: '100%' });
+  function toggleNav() {
+    document.getElementById("myTopnav").classList.toggle("responsive");
+  }
+
+  $(function() {
+    $('.js-example-basic-single').select2({
+      width: '100%',
+      placeholder: 'Search for golfer',  // shown in the dropdown’s search box
+      allowClear: true,                     // adds an “×” to clear selection
+      minimumResultsForSearch: 0            // 0 = always show search input
     });
-  </script>
+  });
+</script>
+
 
   {% block scripts %}{% endblock %}
 </body>
