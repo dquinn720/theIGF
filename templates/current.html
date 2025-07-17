@@ -15,11 +15,9 @@
         <select name="golfer" id="golferDraft"
                 class="js-example-basic-single mb-2" {{ visability | safe }}>
                 {% if golferList|length <= 1 %} disabled {% endif %}>
-          {% for _, value in golferList.iterrows() %}
-            <option value="{{ value['dg_id'] }}">
-              {{ value['player_name'] }}
-            </option>
-          {% endfor %}
+                {% for golfer in golferList %}
+                  <option value="{{ golfer.dg_id }}">{{ golfer.player_name }}</option>
+                {% endfor %}
         </select>
         <button type="submit" class="btn btn-primary mb-2" {{ visability | safe }}>
           Submit Pick
