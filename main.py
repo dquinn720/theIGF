@@ -17,7 +17,7 @@ import datetime
 def inject_years():
     current = datetime.date.today().year
     # for example, years 2000 up through this year:
-    years = list(range(current, 2013, -1))
+    years = list(range(current, 2012, -1))
     return { 'years': years }
 
 @app.route('/', methods =["GET", "POST"])
