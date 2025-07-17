@@ -67,9 +67,10 @@
 
 	<label for="golferDraft">Golfer:</label>
 		<select name="golfer" class="js-example-basic-single" style="width: 150px;">
+			<option value=""></option>
 			<option value=DELETE>Delete Selection</option>
 			{% for g in golferList %}
-              		<option value={{g.dg_id}}>{{g.player_name}}</option>
+              		<option value="{{g.dg_id}}">{{g.player_name}}</option>
 			{% endfor %}
             </select>
      	
