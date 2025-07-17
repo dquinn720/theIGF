@@ -1,56 +1,7 @@
-<!DOCTYPE html>
-<html style="font-size: 16px;" lang="en"><head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="utf-8">
-    <meta name="keywords" content="">
-    <meta name="description" content="">
-    <title>IGF Stats</title>
-    <meta name="theme-color" content="#478ac9">
-    <meta property="og:title" content="IGF Stats">
-    <meta property="og:type" content="website">
-    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
+{% extends "layout.html" %}
+{% block title %}Admin Site{% endblock %}
 
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
-
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<script>
-$(document).ready(function() {
-    $('.js-example-basic-single').select2();
-});
-</script>
-    
-    <script>
-    function myFunction() {
-          var x = document.getElementById("myTopnav");
-          if (x.className === "topnav") {
-            x.className += " responsive";
-          } else {
-            x.className = "topnav";
-          }
-        }
-  </script>
-        
-   
-  </head>
-  <body data-home-page="admin.html" data-home-page-title="IGF Admin">
-  
-  <div class= "header-image"></div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    
-    <div class="topnav" id="myTopnav">
-      <a href="/" class="active">Current Board</a>
-      <a href="past">Past Boards</a>
-      <a href="stats">IGF Stats</a>
-      <a href="research">Player Research</a>
-      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-        <i class="fa fa-bars"></i>
-      </a>
-    </div>
-  <br>
+{% block content %}
 <div class="container">
 
         <form action="{{ url_for('admin')}}" method="post" onsubmit="return confirm('Are you sure you want to edit this draft pick?')">
@@ -134,7 +85,5 @@ $(document).ready(function() {
      	
 	<button type="submit">Update Pick</button>
         
-     </div>  
-     <br>  
-    
-</body></html>
+     </div>
+{% endblock %}

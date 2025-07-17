@@ -1,48 +1,6 @@
-<!DOCTYPE html>
-<html style="font-size: 16px;" lang="en"><head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="utf-8">
-    <meta name="keywords" content="">
-    <meta name="description" content="">
-    <title>IGF Stats - Champions</title>
-    <meta name="theme-color" content="#478ac9">
-    <meta property="og:title" content="IGF Stats - Champions">
-    <meta property="og:type" content="website">
-    <link rel="stylesheet"  href="{{url_for('static', filename='style.css')}}" >
-    
-    <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script> 
-
-
-   
-  </head>
-  <body data-home-page="champions.html" data-home-page-title="IGF Stats - Champions">
-  
-  <div class= "header-image"></div>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    
-    <div class="topnav" id="myTopnav">
-      <a href="/">Current Board</a>
-      <a href="past">Past Boards</a>
-      <div class="subnav">
-    			<button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
-    			<div class="subnav-content">
-      		<a href="champions">Champions</a>\
-			<a href="igf_results">IGF Results</a>
-			<a href="golfer_results">Golfer Results</a>
-			<a href="cum">CUM</a>
-      		<a href="hard_on" >HARD ON</a>
-  		  </div>
-	  </div>
-      <a href="research">Player Research</a>
-      <a href="javascript:void(0);" class="icon" onclick="myFunction()">
-        <i class="fa fa-bars"></i>
-      </a>
-    </div>
-
-<br>
-
+{% extends "layout.html" %}
+{% block title %} IGF Results - Champions {% endblock %}
+{% block content %}
 <div>
     <p><strong> IGF Results - Champions</strong></p>
     <br>
@@ -94,6 +52,4 @@
              </table>
             </div>
 </div>
-
-   
-</body></html>
+{% endblock %}
