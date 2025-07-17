@@ -60,10 +60,15 @@
   </script>
 
   <script>
-    $(document).ready(function() {
-        $('.js-example-basic-single').select2();
+  $(function(){
+    $('.js-example-basic-single').select2({
+      width: '100%',
+      placeholder: 'Search…',
+      allowClear: true,
+      minimumResultsForSearch: 0   // 0 = always show the search box
     });
-  </script>
+  });
+</script>
   
   {% endblock %}
 
