@@ -144,3 +144,13 @@ table.sortable tr:hover {
   vertical-align: middle;
   margin-right: .5rem;
 }
+
+/* hide the native <select> once Select2 has taken over */
+.select2-hidden-accessible {
+  display: none !important;
+}
+
+/* force the Select2 container to fill its parent */
+.select2-container {
+  width: 100% !important;
+}
