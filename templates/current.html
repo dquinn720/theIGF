@@ -13,7 +13,7 @@
       <div class="form-row align-items-center">
         <label for="golferDraft" class="mr-2" {{ visability | safe }}>Golfer to Draft:</label>
         <select name="golfer" id="golferDraft"
-                class="js-example-basic-single mb-2" {{ visability | safe }}>
+                class="js-example-basic-single" {{ visability | safe }}>
                 {% if golferList|length <= 1 %} disabled {% endif %}>
                 {% for golfer in golferList %}
                   <option value="{{ golfer.dg_id }}">{{ golfer.player_name }}</option>
