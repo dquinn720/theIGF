@@ -30,6 +30,16 @@ input, select, textarea {
   flex-wrap: wrap;
   position: sticky; top: 0; z-index: 100;
 }
+
+.topnav .subnavbtn {
+  background-color: var(--dark) !important;  /* same as your nav background */
+  color: #f2f2f2;                            /* same as other links */
+}
+.topnav .subnavbtn:hover {
+  background-color: var(--primary);          /* same hover as links */
+  color: #fff;
+}
+
 .topnav a,
 .subnavbtn {
   color: #fff;
@@ -37,11 +47,14 @@ input, select, textarea {
   text-decoration: none;
   transition: background var(--transition);
 }
+
 .topnav a.active,
 .topnav a:hover,
 .subnavbtn:hover {
   background: var(--primary);
 }
+
+
 
 /* Hamburger icon */
 .topnav .icon {
