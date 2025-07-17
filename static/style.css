@@ -3,8 +3,17 @@
   --dark: #333;
   --light-bg: #f2f2f2;
   --hover-bg: #ddd;
-  --font-sans: Arial, Helvetica, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI',
+               Roboto, 'Helvetica Neue', Arial, sans-serif;
   --transition: 0.3s;
+}
+
+/* apply globally */
+html, body,
+h1, h2, h3, h4, h5, h6,
+p, a, span, label, button,
+input, select, textarea {
+  font-family: var(--font-sans) !important;
 }
 
 /* Header logo */
@@ -40,15 +49,20 @@
   margin-left: auto;
   cursor: pointer;
 }
-@media (max-width: 600px) {
-  .topnav a:not(:first-child),
-  .subnav {
+@media (max-width: 768px) {
+  /* Hide every nav link & dropdown button */
+  .topnav a,
+  .topnav .subnav {
     display: none;
   }
+  /* But show the hamburger icon */
   .topnav .icon {
     display: block;
+    margin-left: auto;
   }
 }
+
+/* When toggled open, stack them vertically */
 .topnav.responsive {
   flex-direction: column;
 }
@@ -86,13 +100,13 @@
 
 /* Tables */
 .table-responsive {
-  overflow-x: auto;
+  overflow-x: auto;               /* allow horizontal scroll */
+  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
 }
+
 table.sortable {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-sans);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: auto;                     /* size to content, not 100% */
+  min-width: 100%;                 /* at least full container width */
 }
 table.sortable th,
 table.sortable td {
