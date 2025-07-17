@@ -11,6 +11,15 @@ live_leaderboard_heads_new = ('Golfer', 'IGFer', 'Pick', 'Pos', 'Thru', 'Today',
 final_leaderboard_heads = ('Pro Golfer', 'IGF Golfer', 'Pick Number', 'Position', 'Total','IGF Score')
 just_draft_heads = ('Pro Golfer', 'IGF Golfer', 'Pick Number')
 
+import datetime
+
+@app.context_processor
+def inject_years():
+    current = datetime.date.today().year
+    # for example, years 2000 up through this year:
+    years = list(range(current, 2013, -1))
+    return { 'years': years }
+
 @app.route('/', methods =["GET", "POST"])
 def current():
     draft_name=get_current_draft_name()
