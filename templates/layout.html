@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}The IGF App{% endblock %}</title>
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <!-- Your stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Logo/Header -->
+  <header class="header-image"></header>
+
+  <!-- Responsive Top Navigation -->
+  <nav class="topnav" id="myTopnav">
+    <a href="/" class="{% if request.path=='/' %}active{% endif %}">Current Board</a>
+    <a href="/past" class="{% if request.path=='/past' %}active{% endif %}">Past Boards</a>
+
+    <div class="subnav">
+      <button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
+      <div class="subnav-content">
+        <a href="/champions">Champions</a>
+        <a href="/igf_results">IGF Results</a>
+        <a href="/golfer_results">Golfer Results</a>
+        <a href="/cum">CUM</a>
+        <a href="/hard_on">HARD ON</a>
+      </div>
+    </div>
+
+    <a href="/research" class="{% if request.path=='/research' %}active{% endif %}">Player Research</a>
+
+    <!-- Hamburger for mobile -->
+    <a href="javascript:void(0);" class="icon" onclick="toggleNav()">
+      <i class="fa fa-bars"></i>
+    </a>
+  </nav>
+
+  <!-- Page content -->
+  <main class="container my-4">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Core JS libs -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='sorttable.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <!-- Navigation toggle + Select2 init -->
+  <script>
+    function toggleNav() {
+      document.getElementById("myTopnav").classList.toggle("responsive");
+    }
+    $(function() {
+      $('.js-example-basic-single').select2({ width: '100%' });
+    });
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
