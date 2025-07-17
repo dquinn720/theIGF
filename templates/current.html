@@ -43,23 +43,30 @@
         </thead>
         <tbody>
           {% for row in igf_data %}
-            <tr>
-              {% for cell in row %}
-                {% if loop.index > 2 %}
-                  <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
-                    <img src="{{ url_for('static',
-                        filename='images/' ~ igf_data_dg[rowloop.index0][loop.index0] ~ '.png') }}"
-                         alt="" class="icon-img">
-                    {{ cell }}
-                  </td>
-                {% else %}
-                  <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
-                    {{ cell }}
-                  </td>
-                {% endif %}
-              {% endfor %}
-            </tr>
-          {% endfor %}
+          {# store the outer loop’s zero‑based index #}
+          {% set outer_index = loop.index0 %}
+          <tr>
+            {% for cell in row %}
+              {% if loop.index > 2 %}
+                <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
+                  <img
+                    src="{{ url_for(
+                      'static',
+                      filename='images/' ~ igf_data_dg[outer_index][loop.index0] ~ '.png'
+                    ) }}"
+                    alt=""
+                    class="icon-img"
+                  >
+                  {{ cell }}
+                </td>
+              {% else %}
+                <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
+                  {{ cell }}
+                </td>
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
         </tbody>
       </table>
     </div>
