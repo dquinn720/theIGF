@@ -20,13 +20,16 @@ def current():
     current_pick = get_min_pick()
     if current_pick == None:
         visability = ''' hidden="hidden" '''
-        golferList = ()
+        golferList = []
     else:
         visability = ''
-        if is_field_live(os.environ.get('DATA_GOLF_KEY')):
-            golferList = get_latest_field(os.environ.get('DATA_GOLF_KEY'))
-        else:
-            golferList = get_all_pga_for_draft(os.environ.get('DATA_GOLF_KEY'))
+        df = (
+            get_latest_field(os.environ.get('DATA_GOLF_KEY'))
+            if is_field_live(os.environ.get('DATA_GOLF_KEY'))
+            else get_all_pga_for_draft(os.environ.get('DATA_GOLF_KEY'))
+        )
+        # convert to a list of simple dicts for Jinja
+        golferList = df.to_dict(orient='records')
     current_igf = get_pick_igf()
     if request.method == "POST":
         submit_pick(current_pick, request.form.get("golfer"))
