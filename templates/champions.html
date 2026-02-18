@@ -23,6 +23,8 @@
                       		<th style="text-align:center"><img src="{{url_for('static',filename='images/us_open.png') }}" style="height:100px"/> </th>
                       	{% elif header == 'The Open Championship' %}
                       		<th style="text-align:center"><img src="{{url_for('static',filename='images/open_championship.png') }}" style="height:100px"/> </th>
+                      	{% elif header == 'Ryder Cup' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/ryder_cup.png') }}" style="height:100px"/> </th>
 				{% else %}
 					<th></th>
 			      {% endif %}
@@ -31,22 +33,13 @@
 
                   {% for row in champs %}
                   <tr>
-                      {% for cell in row %}
-				{% if loop.index == 1 %}
-                      		<td>{{ cell | safe}} </td>
-				{% elif loop.index == 2 %}
-					<td><b>{{ row[1] | safe}}</b><br><i>({{ row[2] | safe}})</i> </td>
-				{% elif loop.index == 4 %}
-					<td><b>{{ row[3] | safe}}</b><br><i>({{ row[4] | safe}})</i> </td>
-				{% elif loop.index == 6 %}
-					<td><b>{{ row[5] | safe}}</b><br><i>({{ row[6] | safe}})</i> </td>
-				{% elif loop.index == 8 %}
-					<td><b>{{ row[7] | safe}}</b><br><i>({{ row[8] | safe}})</i> </td>
-				{% elif loop.index == 10 %}
-					<td><b>{{ row[9] | safe}}</b><br><i>({{ row[10] | safe}})</i> </td>
-				{% endif %}
-                      {% endfor %}
-
+                      <td>{{ row[0] | safe}} </td>
+                      <td><b>{{ row[1] | safe}}</b><br><i>({{ row[2] | safe}})</i> </td>
+                      <td><b>{{ row[3] | safe}}</b><br><i>({{ row[4] | safe}})</i> </td>
+                      <td><b>{{ row[5] | safe}}</b><br><i>({{ row[6] | safe}})</i> </td>
+                      <td><b>{{ row[7] | safe}}</b><br><i>({{ row[8] | safe}})</i> </td>
+                      <td><b>{{ row[9] | safe}}</b><br><i>({{ row[10] | safe}})</i> </td>
+                      <td><b>{{ row[11] | safe if row[11] else '' }}</b>{% if row[12] %}<br><i>({{ row[12] | safe}})</i>{% endif %}</td>
                   </tr>
                   {% endfor %}
              </table>

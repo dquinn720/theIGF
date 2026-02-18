@@ -59,16 +59,15 @@
                   </a>
                 </td>
               {% elif loop.index > 2 %}
+                {% set dg_id = igf_data_dg[outer_index][loop.index0] %}
                 <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
-                  <img
-                    src="{{ url_for(
-                      'static',
-                      filename='images/' ~ igf_data_dg[outer_index][loop.index0] ~ '.png'
-                    ) }}"
-                    alt=""
-                    class="icon-img"
-                  >
-                  {{ cell }}
+                  <a href="{{ url_for('golfer_profile', dg_id=dg_id) }}" class="golfer-link">
+                    <img src="{{ url_for('static', filename='images/' ~ dg_id ~ '.png') }}"
+                         alt=""
+                         class="golfer-avatar"
+                         onerror="this.style.display='none';">
+                    {{ cell }}
+                  </a>
                 </td>
               {% else %}
                 <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
@@ -96,14 +95,18 @@
         </thead>
         <tbody>
           {% for row in tournament_data %}
+            {% set dg_id = row[-1]|string|replace('.0','') %}
             <tr>
               {% for cell in row %}
                 {% if loop.index == 1 %}
                   <td data-label="{{ headings[loop.index0] }}">
-                    <img src="{{ url_for('static',
-                        filename='images/' ~ row[-1]|replace('.0','') ~ '.png') }}"
-                         alt="" class="icon-img">
-                    {{ cell }}
+                    <a href="{{ url_for('golfer_profile', dg_id=dg_id) }}" class="golfer-link">
+                      <img src="{{ url_for('static', filename='images/' ~ dg_id ~ '.png') }}"
+                           alt="" 
+                           class="golfer-avatar"
+                           onerror="this.style.display='none';">
+                      {{ cell }}
+                    </a>
                   </td>
                 {% elif loop.index0 == 1 %}
                   <td data-label="{{ headings[loop.index0] }}">

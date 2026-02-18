@@ -230,6 +230,24 @@ def get_champions():
         result = conn.execute('''Select * from igf_champions''')
         champions = result.fetchall()
     champions_table=pd.DataFrame(champions, columns=[ 'tournament_year', 'tpc_winner', 'tpc_runner_up', 'masters_winner', 'masters_runner_up', 'pga_winner', 'pga_runner_up', 'us_winner', 'us_runner_up', 'british_winner', 'british_runner_up'])
+    
+    # Add Ryder Cup column from special_results
+    with engine.connect() as conn:
+        ryder_result = conn.execute('''
+            SELECT draft_year, 
+                   MAX(CASE WHEN igf_rank = 1 THEN igf_golfer END) as ryder_winner,
+                   MAX(CASE WHEN igf_rank = 2 THEN igf_golfer END) as ryder_runner_up
+            FROM special_results 
+            WHERE tournament = 'The Ryder Cup'
+            GROUP BY draft_year
+        ''')
+        ryder_data = ryder_result.fetchall()
+    
+    ryder_df = pd.DataFrame(ryder_data, columns=['tournament_year', 'ryder_winner', 'ryder_runner_up'])
+    champions_table = champions_table.merge(ryder_df, on='tournament_year', how='left')
+    champions_table['ryder_winner'] = champions_table['ryder_winner'].fillna('')
+    champions_table['ryder_runner_up'] = champions_table['ryder_runner_up'].fillna('')
+    
     champs = list(champions_table.itertuples(index=False, name=None))
     conn.close()
     return(champs)
@@ -259,16 +277,44 @@ def get_igf_results(view_by):
             results = result.fetchall()
             data_table=pd.DataFrame(results, columns=['igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british','cum'])
             data_table.fillna(0, inplace=True)
+            
+            # Add Ryder Cup wins from special_results
+            ryder_result = conn.execute('''
+                SELECT igf_golfer, COUNT(*) as ryder 
+                FROM special_results 
+                WHERE igf_rank = 1 
+                GROUP BY igf_golfer
+            ''')
+            ryder_data = ryder_result.fetchall()
+            ryder_df = pd.DataFrame(ryder_data, columns=['igf_golfer', 'ryder'])
+            data_table = data_table.merge(ryder_df, on='igf_golfer', how='left')
+            data_table['ryder'] = data_table['ryder'].fillna(0)
+            
             data_table['total'] = data_table.drop('igf_golfer', axis=1).sum(axis=1)
-            data_table.astype({'tpc': int, 'masters': int, 'pga': int, 'us': int, 'british': int,'cum': int,'total': int})
+            data_table = data_table[['igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british', 'cum', 'ryder', 'total']]
+            data_table.astype({'tpc': int, 'masters': int, 'pga': int, 'us': int, 'british': int,'cum': int, 'ryder': int, 'total': int})
     elif view_by == 'second':
         with engine.connect() as conn:
             result = conn.execute('''select * from igf_runner_ups''')
             results = result.fetchall()
             data_table=pd.DataFrame(results, columns=[ 'igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british','cum'])
             data_table.fillna(0, inplace=True)
+            
+            # Add Ryder Cup runner-ups from special_results
+            ryder_result = conn.execute('''
+                SELECT igf_golfer, COUNT(*) as ryder 
+                FROM special_results 
+                WHERE igf_rank = 2 
+                GROUP BY igf_golfer
+            ''')
+            ryder_data = ryder_result.fetchall()
+            ryder_df = pd.DataFrame(ryder_data, columns=['igf_golfer', 'ryder'])
+            data_table = data_table.merge(ryder_df, on='igf_golfer', how='left')
+            data_table['ryder'] = data_table['ryder'].fillna(0)
+            
             data_table['total'] = data_table.drop('igf_golfer', axis=1).sum(axis=1)
-            data_table.astype({'tpc': int, 'masters': int, 'pga': int, 'us': int, 'british': int,'cum': int,'total': int})
+            data_table = data_table[['igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british', 'cum', 'ryder', 'total']]
+            data_table.astype({'tpc': int, 'masters': int, 'pga': int, 'us': int, 'british': int,'cum': int, 'ryder': int, 'total': int})
     data = list(data_table.itertuples(index=False, name=None))
     conn.close()
     return(data)
@@ -1100,6 +1146,16 @@ def get_igf_profile_data(igf_name):
             WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
         """)
         row = result.fetchone()
+        
+        # Get Ryder Cup wins from special_results
+        ryder_result = conn.execute("""
+            SELECT COUNT(*) FROM special_results 
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """' 
+            AND igf_rank = 1
+        """)
+        ryder_row = ryder_result.fetchone()
+        ryder_wins = ryder_row[0] if ryder_row else 0
+        
         if row:
             profile['wins_breakdown'] = {
                 'tpc': int(row[0]),
@@ -1107,12 +1163,13 @@ def get_igf_profile_data(igf_name):
                 'pga': int(row[2]),
                 'us_open': int(row[3]),
                 'open_champ': int(row[4]),
-                'cum': int(row[5])
+                'cum': int(row[5]),
+                'ryder': ryder_wins
             }
         else:
             profile['wins_breakdown'] = {
                 'tpc': 0, 'masters': 0, 'pga': 0, 
-                'us_open': 0, 'open_champ': 0, 'cum': 0
+                'us_open': 0, 'open_champ': 0, 'cum': 0, 'ryder': ryder_wins
             }
     
     # Get favorite golfers (most drafted)
