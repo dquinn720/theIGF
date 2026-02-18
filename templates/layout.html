@@ -23,20 +23,18 @@
   <nav class="topnav" id="myTopnav">
     <a href="/" class="{% if request.path=='/' %}active{% endif %}">Current Board</a>
     <a href="/past" class="{% if request.path=='/past' %}active{% endif %}">Past Boards</a>
+    <a href="/igf_members" class="{% if request.path=='/igf_members' %}active{% endif %}">IGF Members</a>
+    <a href="/golfer_results" class="{% if request.path=='/golfer_results' %}active{% endif %}">Golfer Profiles</a>
 
     <div class="subnav">
       <button class="subnavbtn">IGF Stats <i class="fa fa-caret-down"></i></button>
       <div class="subnav-content">
         <a href="/champions">Champions</a>
         <a href="/igf_results">IGF Results</a>
-        <a href="/golfer_results">Golfer Results</a>
         <a href="/cum">CUM</a>
         <a href="/hard_on">HARD ON</a>
-        <a href="/igf_members">IGF Members</a>
       </div>
     </div>
-
-    <a href="/research" class="{% if request.path=='/research' %}active{% endif %}">Player Research</a>
 
     <!-- Hamburger for mobile -->
     <a href="javascript:void(0);" class="icon" onclick="toggleNav()">

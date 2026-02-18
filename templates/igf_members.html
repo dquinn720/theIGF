@@ -134,7 +134,13 @@
             </div>
             <div>
                 <h3 class="member-name">{{ member.name }}</h3>
-                <div class="member-since">Member since {{ member.first_year }}</div>
+                {% if member.name == 'J. Theiss' %}
+                    <div class="member-since">Member from 2013-2017</div>
+                {% elif member.name == 'J. Nieting' %}
+                    <div class="member-since">Non-Equity since 2018</div>
+                {% else %}
+                    <div class="member-since">Member since {{ member.first_year }}</div>
+                {% endif %}
             </div>
         </div>
         <div class="member-card-body">
