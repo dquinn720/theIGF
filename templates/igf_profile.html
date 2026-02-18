@@ -201,7 +201,13 @@
     </div>
     <div class="profile-info">
         <h1>{{ igf_name }}</h1>
-        <div class="tagline">IGF Member since {{ profile.first_year }}</div>
+        {% if igf_name == 'J. Theiss' %}
+            <div class="tagline">IGF Member from 2013-2017</div>
+        {% elif igf_name == 'J. Nieting' %}
+            <div class="tagline">Non-Equity League Participant since 2018</div>
+        {% else %}
+            <div class="tagline">IGF Member since {{ profile.first_year }}</div>
+        {% endif %}
     </div>
 </div>
 

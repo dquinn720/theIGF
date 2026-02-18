@@ -1,28 +1,288 @@
 {% extends "layout.html" %}
-{% block title %}IGF Results - Golfer Results{% endblock %}
+{% block title %}Golfer Profiles{% endblock %}
+
+{% block head %}
+<style>
+    .search-container {
+        position: relative;
+        max-width: 400px;
+        margin-bottom: 25px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 25px;
+        outline: none;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .search-input:focus {
+        border-color: #2c5282;
+        box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+    }
+    
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 18px;
+    }
+    
+    .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        max-height: 350px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        margin-top: 5px;
+    }
+    
+    .search-results.active {
+        display: block;
+    }
+    
+    .search-result-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        color: inherit;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-result-item:hover {
+        background: #f5f8fa;
+    }
+    
+    .search-result-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #2c5282;
+        margin-right: 12px;
+        background-color: #e8f0f8;
+    }
+    
+    .search-result-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #2c5282;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        margin-right: 12px;
+        flex-shrink: 0;
+    }
+    
+    .search-result-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .search-result-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .search-result-country {
+        font-size: 12px;
+        color: #888;
+    }
+    
+    .search-no-results {
+        padding: 20px;
+        text-align: center;
+        color: #999;
+    }
+    
+    .search-loading {
+        padding: 20px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .page-header {
+        margin-bottom: 20px;
+    }
+    
+    .page-header h1 {
+        color: #2c5282;
+        margin-bottom: 5px;
+    }
+    
+    .page-header p {
+        color: #666;
+        font-size: 0.95em;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
-
-<div>
-    <p><strong> IGF Results - Golfer Results (min. 4 rounds drafted)</strong></p>
-   
-     <br>
-          <div>
-              <table class="sortable">
-                  <tr>
-                      {% for header in results_heads %}
-                      <th> {{header | safe}} </th>
-                      {% endfor %}
-                  </tr>
-                  {% for row in results_data %}
-                  <tr>
-                      {% for cell in row %}
-                      <td>{{ cell | safe}} </td>
-                      {% endfor %}
-                  </tr>
-                  {% endfor %}
-             </table>
-            </div>
+<div class="page-header">
+    <h1>Golfer Profiles</h1>
+    <p>Search for any golfer or browse IGF draft stats below (min. 4 rounds drafted)</p>
 </div>
+
+<!-- Search Bar -->
+<div class="search-container">
+    <i class="fa fa-search search-icon"></i>
+    <input type="text" 
+           id="golferSearch" 
+           class="search-input" 
+           placeholder="Search for a golfer..."
+           autocomplete="off">
+    <div id="searchResults" class="search-results"></div>
+</div>
+
+<!-- Results Table -->
+<div>
+    <div>
+        <table class="sortable">
+            <tr>
+                {% for header in results_heads %}
+                <th>{{ header | safe }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in results_data %}
+            <tr>
+                {% for cell in row %}
+                    {% if loop.index0 == 0 %}
+                        {# First column is dg_id - skip display but use for link #}
+                    {% elif loop.index0 == 1 %}
+                        {# Second column is golfer name - make it a link #}
+                        <td>
+                            <a href="{{ url_for('golfer_profile', dg_id=row[0]) }}" class="golfer-link">
+                                <img src="{{ url_for('static', filename='images/' ~ row[0] ~ '.png') }}" 
+                                     class="golfer-avatar"
+                                     onerror="this.style.display='none';">
+                                {{ cell | safe }}
+                            </a>
+                        </td>
+                    {% else %}
+                        <td>{{ cell | safe }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('golferSearch');
+    const searchResults = document.getElementById('searchResults');
+    let searchTimeout = null;
+    
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        // Hide results if query is too short
+        if (query.length < 2) {
+            searchResults.classList.remove('active');
+            return;
+        }
+        
+        // Show loading
+        searchResults.innerHTML = '<div class="search-loading">Searching...</div>';
+        searchResults.classList.add('active');
+        
+        // Debounce the search
+        searchTimeout = setTimeout(function() {
+            fetch('/api/golfer_search?q=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.results.length === 0) {
+                        searchResults.innerHTML = '<div class="search-no-results">No golfers found</div>';
+                    } else {
+                        searchResults.innerHTML = data.results.map(golfer => `
+                            <a href="/golfer/${golfer.dg_id}" class="search-result-item">
+                                <img src="/static/images/${golfer.dg_id}.png" 
+                                     class="search-result-avatar"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="search-result-avatar-placeholder" style="display:none;">
+                                    ${golfer.player_name.charAt(0)}
+                                </div>
+                                <div class="search-result-info">
+                                    <div class="search-result-name">${golfer.player_name}</div>
+                                    <div class="search-result-country">${golfer.country || ''}</div>
+                                </div>
+                            </a>
+                        `).join('');
+                    }
+                    searchResults.classList.add('active');
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    searchResults.innerHTML = '<div class="search-no-results">Error searching</div>';
+                });
+        }, 300); // 300ms debounce
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.remove('active');
+        }
+    });
+    
+    // Show results when focusing on input (if there's a query)
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length >= 2 && searchResults.innerHTML) {
+            searchResults.classList.add('active');
+        }
+    });
+    
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const items = searchResults.querySelectorAll('.search-result-item');
+        const activeItem = searchResults.querySelector('.search-result-item:hover, .search-result-item.active');
+        
+        if (e.key === 'Escape') {
+            searchResults.classList.remove('active');
+            searchInput.blur();
+        }
+        
+        if (e.key === 'Enter' && items.length > 0) {
+            e.preventDefault();
+            // Navigate to first result
+            items[0].click();
+        }
+    });
+});
+</script>
 
 {% endblock %}

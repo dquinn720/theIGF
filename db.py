@@ -275,9 +275,9 @@ def get_igf_results(view_by):
 def get_player_results():
     engine = connect_tcp_socket()
     with engine.connect() as conn:
-        result = conn.execute('''select player_name, count(t.position) as rounds, avg(t.igf_score)*1 as avg_igf, avg(igf_rank)*1 as avg_igf_rank, sum(case when i.igf_rank = 1 then 1 else 0 end) igf_wins, (sum(case when i.igf_rank = 1 then 1 else 0 end) / count(t.position)::float)*100 igf_wins_pct, sum(case when (t.position = 'CUT' or t.position = 'WD' or t.position = 'DQ') then 1 else 0 end) cut_count, (sum(case when (t.position = 'CUT' or t.position = 'WD' or t.position = 'DQ') then 1 else 0 end) / count(t.position)::float)*100 as cut_pct from draft_results d  left join tournament_results t on d.draft_year = t.tournament_year and d.tournament = t.tournament and d.dg_id = t.dg_id left join igf_leaderboards i on i.draft_year = d.draft_year and i.tournament=d.tournament and i.igf_golfer = d.igf_golfer where t.igf_score is not null group by t.player_name having count(t.position)>4 order by avg_igf asc''')
+        result = conn.execute('''select t.dg_id, player_name, count(t.position) as rounds, avg(t.igf_score)*1 as avg_igf, avg(igf_rank)*1 as avg_igf_rank, sum(case when i.igf_rank = 1 then 1 else 0 end) igf_wins, (sum(case when i.igf_rank = 1 then 1 else 0 end) / count(t.position)::float)*100 igf_wins_pct, sum(case when (t.position = 'CUT' or t.position = 'WD' or t.position = 'DQ') then 1 else 0 end) cut_count, (sum(case when (t.position = 'CUT' or t.position = 'WD' or t.position = 'DQ') then 1 else 0 end) / count(t.position)::float)*100 as cut_pct from draft_results d  left join tournament_results t on d.draft_year = t.tournament_year and d.tournament = t.tournament and d.dg_id = t.dg_id left join igf_leaderboards i on i.draft_year = d.draft_year and i.tournament=d.tournament and i.igf_golfer = d.igf_golfer where t.igf_score is not null group by t.dg_id, t.player_name having count(t.position)>4 order by avg_igf asc''')
         player_results = result.fetchall()
-    results_table=pd.DataFrame(player_results, columns=['Golfer', 'Rounds Drafted', 'Avg IGF Score', 'Avg IGF Place', 'IGF Wins', 'IGF Win %', 'IGF Cuts', 'IGF Cut %'])
+    results_table=pd.DataFrame(player_results, columns=['dg_id', 'Golfer', 'Rounds Drafted', 'Avg IGF Score', 'Avg IGF Place', 'IGF Wins', 'IGF Win %', 'IGF Cuts', 'IGF Cut %'])
     rounded=results_table.round({'IGF Win %':1, 'IGF Cut %':1})
     rounded['Avg IGF Score'] = rounded['Avg IGF Score'].astype(float).round(2)
     rounded['Avg IGF Place'] = rounded['Avg IGF Place'].astype(float).round(2)
@@ -1213,3 +1213,400 @@ def get_igf_member_summary():
         ]
     conn.close()
     return members
+
+
+# ============================================
+# PRO GOLFER PROFILE PAGE FUNCTIONS
+# ============================================
+
+def get_golfer_profile_data(dg_id):
+    """
+    Fetch all data needed for a pro golfer's profile page.
+    Returns a dictionary with all profile sections, or None if golfer not found.
+    """
+    engine = connect_tcp_socket()
+    
+    # First, get golfer basic info
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT dg_id, player_name, country, country_code FROM pga_golfers WHERE dg_id = " + str(dg_id)
+        )
+        row = result.fetchone()
+        if not row:
+            return None
+        profile = {
+            'dg_id': row[0],
+            'player_name': row[1],
+            'country': row[2] or 'Unknown',
+            'country_code': row[3] or ''
+        }
+    
+    # Get total times drafted
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM draft_results WHERE dg_id = " + str(dg_id)
+        )
+        row = result.fetchone()
+        profile['times_drafted'] = row[0] if row else 0
+    
+    # Get first year drafted
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT MIN(draft_year) FROM draft_results WHERE dg_id = " + str(dg_id)
+        )
+        row = result.fetchone()
+        profile['first_drafted'] = row[0] if row and row[0] else 'Never'
+    
+    # Get IGF wins (times this golfer's IGFer won)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT COUNT(*) FROM draft_results d
+            JOIN igf_leaderboards l ON d.igf_golfer = l.igf_golfer 
+                AND d.draft_year = l.draft_year 
+                AND d.tournament = l.tournament
+            WHERE d.dg_id = """ + str(dg_id) + """ AND l.igf_rank = 1
+        """)
+        row = result.fetchone()
+        profile['igf_wins'] = row[0] if row else 0
+    
+    # Get average IGF score
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT AVG(igf_score) FROM tournament_results WHERE dg_id = " + str(dg_id) + " AND igf_score IS NOT NULL"
+        )
+        row = result.fetchone()
+        avg = row[0] if row and row[0] else None
+        profile['avg_igf_score'] = round(float(avg), 1) if avg else 'N/A'
+    
+    # Get average finish position (excluding CUT, WD, DQ)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT AVG(CAST(REPLACE(REPLACE(position, 'T', ''), 'P', '') AS INTEGER)) 
+            FROM tournament_results 
+            WHERE dg_id = """ + str(dg_id) + """ 
+            AND position NOT IN ('CUT', 'WD', 'DQ', 'MDF')
+            AND position ~ '^[T]?[0-9]+$'
+        """)
+        row = result.fetchone()
+        avg = row[0] if row and row[0] else None
+        profile['avg_finish'] = round(float(avg), 1) if avg else 'N/A'
+    
+    # Get cut rate
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN position IN ('CUT', 'WD', 'DQ', 'MDF') THEN 1 ELSE 0 END) as cuts
+            FROM tournament_results 
+            WHERE dg_id = """ + str(dg_id)
+        )
+        row = result.fetchone()
+        if row and row[0] and row[0] > 0:
+            cut_pct = (row[1] / row[0]) * 100
+            profile['cut_rate'] = str(round(cut_pct, 1)) + '%'
+            profile['made_cut_rate'] = str(round(100 - cut_pct, 1)) + '%'
+        else:
+            profile['cut_rate'] = 'N/A'
+            profile['made_cut_rate'] = 'N/A'
+    
+    # Get tournament history
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT t.tournament_year, t.tournament, t.position, t.total_score, t.igf_score, d.igf_golfer
+            FROM tournament_results t
+            LEFT JOIN draft_results d ON t.dg_id = d.dg_id 
+                AND t.tournament_year = d.draft_year 
+                AND t.tournament = d.tournament
+            WHERE t.dg_id = """ + str(dg_id) + """
+            ORDER BY t.tournament_year DESC, t.tournament
+        """)
+        rows = result.fetchall()
+        profile['tournament_history'] = [
+            {
+                'year': row[0],
+                'tournament': row[1],
+                'position': row[2],
+                'total_score': row[3],
+                'igf_score': row[4],
+                'drafted_by': row[5] or '-'
+            }
+            for row in rows
+        ]
+    
+    # Get who drafts this golfer most (IGFers who love this golfer)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COUNT(*) as times
+            FROM draft_results
+            WHERE dg_id = """ + str(dg_id) + """
+            GROUP BY igf_golfer
+            ORDER BY times DESC
+        """)
+        rows = result.fetchall()
+        profile['drafted_by'] = [
+            {
+                'igf_golfer': row[0],
+                'times': row[1]
+            }
+            for row in rows
+        ]
+    
+    # Get performance by tournament
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament, 
+                COUNT(*) as appearances,
+                AVG(igf_score) as avg_score,
+                MIN(CASE WHEN position NOT IN ('CUT', 'WD', 'DQ', 'MDF') THEN 
+                    CAST(REPLACE(REPLACE(position, 'T', ''), 'P', '') AS INTEGER) 
+                END) as best_finish
+            FROM tournament_results
+            WHERE dg_id = """ + str(dg_id) + """
+            GROUP BY tournament
+            ORDER BY appearances DESC
+        """)
+        rows = result.fetchall()
+        profile['by_tournament'] = [
+            {
+                'tournament': row[0],
+                'appearances': row[1],
+                'avg_score': round(float(row[2]), 1) if row[2] else 'N/A',
+                'best_finish': row[3] if row[3] else '-'
+            }
+            for row in rows
+        ]
+    
+    # Get yearly performance for chart
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament_year, AVG(igf_score) as avg_score, COUNT(*) as tournaments
+            FROM tournament_results
+            WHERE dg_id = """ + str(dg_id) + """ AND igf_score IS NOT NULL
+            GROUP BY tournament_year
+            ORDER BY tournament_year ASC
+        """)
+        rows = result.fetchall()
+        profile['yearly_performance'] = [
+            {
+                'year': row[0],
+                'avg_score': round(float(row[1]), 1) if row[1] else 0,
+                'tournaments': row[2]
+            }
+            for row in rows
+        ]
+    
+    # Get average draft position (when drafted)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT AVG(overall_selection) as avg_pick, 
+                   MIN(overall_selection) as best_pick,
+                   MAX(overall_selection) as worst_pick
+            FROM draft_results 
+            WHERE dg_id = """ + str(dg_id)
+        )
+        row = result.fetchone()
+        if row and row[0]:
+            profile['avg_draft_position'] = round(float(row[0]), 1)
+            profile['best_draft_position'] = row[1]
+            profile['worst_draft_position'] = row[2]
+        else:
+            profile['avg_draft_position'] = 'N/A'
+            profile['best_draft_position'] = 'N/A'
+            profile['worst_draft_position'] = 'N/A'
+    
+    # Get draft position by year (for chart)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT draft_year, AVG(overall_selection) as avg_pick, COUNT(*) as times_drafted
+            FROM draft_results
+            WHERE dg_id = """ + str(dg_id) + """
+            GROUP BY draft_year
+            ORDER BY draft_year ASC
+        """)
+        rows = result.fetchall()
+        profile['draft_position_by_year'] = [
+            {
+                'year': row[0],
+                'avg_pick': round(float(row[1]), 1) if row[1] else None,
+                'times_drafted': row[2]
+            }
+            for row in rows
+        ]
+    
+    # Get total tournaments played (regardless of draft status)
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM tournament_results WHERE dg_id = " + str(dg_id)
+        )
+        row = result.fetchone()
+        profile['total_tournaments'] = row[0] if row else 0
+    
+    # Calculate draft rate (times drafted / tournaments played)
+    if profile['total_tournaments'] > 0:
+        draft_rate = (profile['times_drafted'] / profile['total_tournaments']) * 100
+        profile['draft_rate'] = str(round(draft_rate, 1)) + '%'
+    else:
+        profile['draft_rate'] = 'N/A'
+    
+    # Get nickname if exists
+    profile['nickname'] = nicknames.get(str(dg_id), None)
+    
+    # Get historical results by tournament (for radar/breakdown chart)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament,
+                COUNT(*) as appearances,
+                COUNT(CASE WHEN position NOT IN ('CUT', 'WD', 'DQ', 'MDF') THEN 1 END) as made_cuts,
+                AVG(CASE WHEN position NOT IN ('CUT', 'WD', 'DQ', 'MDF') AND position ~ '^[T]?[0-9]+$' 
+                    THEN CAST(REPLACE(REPLACE(position, 'T', ''), 'P', '') AS INTEGER) END) as avg_finish,
+                MIN(CASE WHEN position NOT IN ('CUT', 'WD', 'DQ', 'MDF') AND position ~ '^[T]?[0-9]+$'
+                    THEN CAST(REPLACE(REPLACE(position, 'T', ''), 'P', '') AS INTEGER) END) as best_finish,
+                COUNT(CASE WHEN position IN ('1', 'T1') THEN 1 END) as wins,
+                COUNT(CASE WHEN position IN ('1', 'T1', '2', 'T2', '3', 'T3') THEN 1 END) as top3
+            FROM tournament_results
+            WHERE dg_id = """ + str(dg_id) + """
+            GROUP BY tournament
+            ORDER BY 
+                CASE tournament
+                    WHEN 'The Masters' THEN 1
+                    WHEN 'PGA Championship' THEN 2
+                    WHEN 'U.S. Open' THEN 3
+                    WHEN 'The Open Championship' THEN 4
+                    WHEN 'THE PLAYERS Championship' THEN 5
+                    ELSE 6
+                END
+        """)
+        rows = result.fetchall()
+        profile['tournament_breakdown'] = [
+            {
+                'tournament': row[0],
+                'appearances': row[1],
+                'made_cuts': row[2],
+                'cut_pct': round((row[2] / row[1]) * 100, 1) if row[1] > 0 else 0,
+                'avg_finish': round(float(row[3]), 1) if row[3] else '-',
+                'best_finish': row[4] if row[4] else '-',
+                'wins': row[5],
+                'top3': row[6]
+            }
+            for row in rows
+        ]
+    
+    # Get year-by-year results matrix (for heatmap-style display)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament_year, tournament, position, igf_score
+            FROM tournament_results
+            WHERE dg_id = """ + str(dg_id) + """
+            ORDER BY tournament_year DESC, 
+                CASE tournament
+                    WHEN 'The Masters' THEN 1
+                    WHEN 'PGA Championship' THEN 2
+                    WHEN 'U.S. Open' THEN 3
+                    WHEN 'The Open Championship' THEN 4
+                    WHEN 'THE PLAYERS Championship' THEN 5
+                    ELSE 6
+                END
+        """)
+        rows = result.fetchall()
+        
+        # Organize by year
+        years_data = {}
+        for row in rows:
+            year = row[0]
+            if year not in years_data:
+                years_data[year] = {}
+            years_data[year][row[1]] = {
+                'position': row[2],
+                'igf_score': row[3]
+            }
+        
+        profile['results_by_year'] = [
+            {
+                'year': year,
+                'results': data
+            }
+            for year, data in sorted(years_data.items(), reverse=True)
+        ]
+    
+    # Get total wins in majors
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT COUNT(*) FROM tournament_results 
+            WHERE dg_id = """ + str(dg_id) + """ 
+            AND position IN ('1', 'T1')
+        """)
+        row = result.fetchone()
+        profile['major_wins'] = row[0] if row else 0
+    
+    # Get total top 10s
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT COUNT(*) FROM tournament_results 
+            WHERE dg_id = """ + str(dg_id) + """ 
+            AND position ~ '^[T]?[0-9]+$'
+            AND CAST(REPLACE(REPLACE(position, 'T', ''), 'P', '') AS INTEGER) <= 10
+        """)
+        row = result.fetchone()
+        profile['top_10s'] = row[0] if row else 0
+    
+    conn.close()
+    return profile
+
+
+def fetch_golfer_stats_by_id(api_key, dg_id):
+    """
+    Fetch DataGolf strokes gained stats for a specific golfer.
+    Returns dict with stats or None if not found.
+    """
+    try:
+        params = {'tour': 'pga', 'file_format': 'json', 'display': 'value', 'key': api_key}
+        resp = requests.request("GET", datagolf_url('preds/skill-ratings'), params=params)
+        envelope = resp.json()
+        players = envelope.get('players', [])
+        
+        for player in players:
+            if player.get('dg_id') == dg_id:
+                return {
+                    'sg_ott': round(player.get('sg_ott', 0), 2),
+                    'sg_app': round(player.get('sg_app', 0), 2),
+                    'sg_arg': round(player.get('sg_arg', 0), 2),
+                    'sg_putt': round(player.get('sg_putt', 0), 2),
+                    'sg_total': round(player.get('sg_total', 0), 2),
+                    'driving_dist': round(player.get('driving_dist', 0), 1),
+                    'driving_acc': round(player.get('driving_acc', 0) * 100, 1) if player.get('driving_acc') else 0
+                }
+        return None
+    except:
+        return None
+
+
+def search_golfers(query):
+    """
+    Search for golfers by name. Returns list of matches with dg_id and player_name.
+    """
+    engine = connect_tcp_socket()
+    # Escape single quotes and make case-insensitive search
+    safe_query = query.replace("'", "''").lower()
+    
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT DISTINCT p.dg_id, p.player_name, p.country
+            FROM pga_golfers p
+            WHERE LOWER(p.player_name) LIKE '%""" + safe_query + """%'
+            ORDER BY 
+                CASE WHEN LOWER(p.player_name) LIKE '""" + safe_query + """%' THEN 0 ELSE 1 END,
+                p.player_name
+            LIMIT 10
+        """)
+        rows = result.fetchall()
+    
+    conn.close()
+    
+    return [
+        {
+            'dg_id': row[0],
+            'player_name': row[1],
+            'country': row[2] or ''
+        }
+        for row in rows
+    ]

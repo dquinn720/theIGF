@@ -194,3 +194,335 @@ table.sortable tr:hover {
   vertical-align: middle;
   border: 2px solid var(--primary);
 }
+
+/* Pro Golfer Profile Links */
+.golfer-link {
+  color: #2c5282;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.golfer-link:hover {
+  color: #1a365d;
+  text-decoration: underline;
+}
+
+/* Golfer Avatar in tables */
+.golfer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #2c5282;
+  vertical-align: middle;
+  background-color: #e8f0f8;
+}
+
+/* Make icon-img also circular for consistency */
+.icon-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-right: .5rem;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Base container padding for mobile */
+.container {
+  padding: 0 15px;
+}
+
+/* Mobile-first responsive breakpoints */
+@media (max-width: 768px) {
+  /* Header logo smaller on mobile */
+  .header-image {
+    height: 70px;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Navigation improvements */
+  .topnav {
+    padding: 0;
+  }
+  
+  .topnav.responsive {
+    align-items: stretch;
+  }
+  
+  .topnav.responsive a {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    text-align: left;
+  }
+  
+  .topnav.responsive .subnav {
+    width: 100%;
+  }
+  
+  .topnav.responsive .subnavbtn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  .topnav.responsive .subnav-content {
+    position: static;
+    background: rgba(0,0,0,0.2);
+  }
+  
+  .topnav.responsive .subnav-content a {
+    padding-left: 30px;
+  }
+  
+  /* Tables - card layout on mobile */
+  table.sortable {
+    font-size: 14px;
+  }
+  
+  table.sortable th,
+  table.sortable td {
+    padding: 8px 6px;
+  }
+  
+  /* Avatar sizes on mobile */
+  .igf-avatar,
+  .golfer-avatar,
+  .icon-img {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .igf-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  /* Links - reduce gap on mobile */
+  .igf-link,
+  .golfer-link {
+    gap: 6px;
+    font-size: 14px;
+  }
+  
+  /* Profile pages */
+  .profile-header {
+    flex-direction: column !important;
+    text-align: center;
+    padding: 15px !important;
+    gap: 15px !important;
+  }
+  
+  .profile-image,
+  .profile-image-placeholder {
+    width: 100px !important;
+    height: 100px !important;
+    font-size: 32px !important;
+  }
+  
+  .profile-info h1 {
+    font-size: 1.8em !important;
+  }
+  
+  /* Stats grid - 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .stat-card {
+    padding: 12px 8px !important;
+  }
+  
+  .stat-card .stat-value {
+    font-size: 1.3em !important;
+  }
+  
+  .stat-card .stat-label {
+    font-size: 0.7em !important;
+  }
+  
+  /* Section titles */
+  .section-title {
+    font-size: 1.2em !important;
+    margin: 20px 0 10px 0 !important;
+  }
+  
+  /* Charts */
+  .chart-container {
+    padding: 10px !important;
+  }
+  
+  .charts-row {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Two column layouts become single column */
+  .two-column,
+  .three-column {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Members grid */
+  .members-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  .member-card-header {
+    padding: 15px !important;
+  }
+  
+  .member-avatar-img,
+  .member-avatar-placeholder {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 20px !important;
+  }
+  
+  .member-name {
+    font-size: 1.1em !important;
+  }
+  
+  /* Search bar */
+  .search-container {
+    max-width: 100% !important;
+  }
+  
+  .search-input {
+    padding: 10px 12px 10px 40px !important;
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .search-results {
+    max-height: 280px !important;
+  }
+  
+  .search-result-item {
+    padding: 10px 12px !important;
+  }
+  
+  .search-result-avatar {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  /* Strokes gained stats */
+  .sg-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  
+  .sg-stat {
+    padding: 8px !important;
+  }
+  
+  .sg-stat .value {
+    font-size: 1.1em !important;
+  }
+  
+  .sg-stat .label {
+    font-size: 0.6em !important;
+  }
+  
+  /* Results matrix - horizontal scroll */
+  .results-matrix {
+    margin: 0 -15px;
+    padding: 0 15px;
+  }
+  
+  .results-matrix table {
+    font-size: 12px;
+  }
+  
+  .results-matrix td {
+    min-width: 60px !important;
+    padding: 6px 4px !important;
+  }
+  
+  /* Earnings grid */
+  .earnings-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+  
+  .earnings-item {
+    padding: 8px !important;
+  }
+  
+  .earnings-item .tournament {
+    font-size: 0.65em !important;
+  }
+  
+  .earnings-item .amount {
+    font-size: 0.85em !important;
+  }
+  
+  /* Error page */
+  .error-container {
+    padding: 40px 15px !important;
+  }
+  
+  .error-logo {
+    width: 120px !important;
+  }
+  
+  .error-title {
+    font-size: 1.5em !important;
+  }
+}
+
+/* Extra small screens (phones in portrait) */
+@media (max-width: 400px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .sg-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .earnings-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  .profile-info h1 {
+    font-size: 1.5em !important;
+  }
+  
+  table.sortable {
+    font-size: 12px;
+  }
+  
+  table.sortable th,
+  table.sortable td {
+    padding: 6px 4px;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  .topnav a,
+  .subnavbtn,
+  .search-result-item,
+  .member-card,
+  .igf-link,
+  .golfer-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  table.sortable td a {
+    padding: 4px 0;
+  }
+}

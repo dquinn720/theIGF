@@ -124,6 +124,16 @@ def golfer_results():
            results_data=results_data,
            results_heads=results_heads))
 
+@app.route('/api/golfer_search', methods=["GET"])
+def golfer_search():
+    from db import search_golfers
+    query = request.args.get('q', '').strip()
+    if len(query) < 2:
+        return {'results': []}
+    
+    results = search_golfers(query)
+    return {'results': results}
+
 @app.route('/champions', methods=["GET"])
 def champions():
     champs = get_champions()
@@ -248,13 +258,8 @@ def site_map():
 
 @app.route('/research', methods=["GET"])
 def research():
-    api_key = os.environ.get('DATA_GOLF_KEY')
-    golfer_stats=fetch_golfer_stats(api_key)
-
-    return render_template(
-        'research.html', 
-        golfer_stats=golfer_stats
-    )
+    # Redirect to golfer_results - DataGolf stats now shown on individual golfer profiles
+    return redirect(url_for('golfer_results'))
 
 @app.route('/igf/<igf_name>', methods=["GET"])
 def igf_profile(igf_name):
@@ -281,6 +286,27 @@ def igf_members():
     return render_template(
         'igf_members.html',
         members=members
+    )
+
+@app.route('/golfer/<int:dg_id>', methods=["GET"])
+def golfer_profile(dg_id):
+    from db import get_golfer_profile_data, fetch_golfer_stats_by_id
+    
+    # Get all profile data for this golfer
+    profile_data = get_golfer_profile_data(dg_id)
+    
+    if profile_data is None:
+        return render_template('404.html', message=f"Golfer not found"), 404
+    
+    # Get DataGolf strokes gained stats
+    api_key = os.environ.get('DATA_GOLF_KEY')
+    dg_stats = fetch_golfer_stats_by_id(api_key, dg_id)
+    
+    return render_template(
+        'golfer_profile.html',
+        dg_id=dg_id,
+        profile=profile_data,
+        dg_stats=dg_stats
     )
 
 # Error Handlers
