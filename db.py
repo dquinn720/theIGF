@@ -1643,13 +1643,22 @@ def fetch_golfer_stats_by_id(api_key, dg_id):
 def search_golfers(query):
     """
     Search for golfers by name. Returns list of matches with dg_id and player_name.
+    Sorted by rounds drafted (most drafted first).
     """
     engine = connect_tcp_socket()
     # Escape single quotes and make case-insensitive search
     safe_query = query.replace("'", "''").lower()
     
     with engine.connect() as conn:
-        result = conn.execute("SELECT DISTINCT dg_id, player_name, country FROM pga_golfers WHERE LOWER(player_name) LIKE '%" + safe_query + "%' ORDER BY player_name LIMIT 10")
+        result = conn.execute("""
+            SELECT p.dg_id, p.player_name, p.country, COUNT(d.dg_id) as rounds_drafted
+            FROM pga_golfers p
+            LEFT JOIN draft_results d ON p.dg_id = d.dg_id
+            WHERE LOWER(p.player_name) LIKE '%""" + safe_query + """%'
+            GROUP BY p.dg_id, p.player_name, p.country
+            ORDER BY rounds_drafted DESC, p.player_name
+            LIMIT 10
+        """)
         rows = result.fetchall()
     
     return [
