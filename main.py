@@ -126,13 +126,14 @@ def golfer_results():
 
 @app.route('/api/golfer_search', methods=["GET"])
 def golfer_search():
+    from flask import jsonify
     from db import search_golfers
     query = request.args.get('q', '').strip()
     if len(query) < 2:
-        return {'results': []}
+        return jsonify({'results': []})
     
     results = search_golfers(query)
-    return {'results': results}
+    return jsonify({'results': results})
 
 @app.route('/champions', methods=["GET"])
 def champions():

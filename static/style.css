@@ -16,133 +16,307 @@ input, select, textarea {
   font-family: var(--font-sans) !important;
 }
 
-/* Header logo */
-.header-image {
-  background: url("/static/images/IGF_Logo.png") center/contain no-repeat;
-  height: 100px;
-  margin-bottom: 1rem;
+* {
+  box-sizing: border-box;
 }
 
-/* Topnav */
-.topnav {
-  display: flex; align-items: center;
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================
+   MOBILE HEADER & NAVIGATION (default)
+   ============================================ */
+
+/* Mobile header bar */
+.mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   background: var(--dark);
-  flex-wrap: wrap;
-  position: sticky; top: 0; z-index: 100;
+  padding: 10px 15px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.topnav .subnavbtn {
-  background-color: var(--dark) !important;  /* same as your nav background */
-  color: #f2f2f2;                            /* same as other links */
-}
-.topnav .subnavbtn:hover {
-  background-color: var(--primary);          /* same hover as links */
-  color: #fff;
-}
-
-.topnav a,
-.subnavbtn {
-  color: #fff;
-  padding: 14px 16px;
+.hamburger-btn {
+  color: white;
+  font-size: 24px;
   text-decoration: none;
-  transition: background var(--transition);
+  padding: 5px 10px;
 }
 
-.topnav a.active,
-.topnav a:hover,
-.subnavbtn:hover {
-  background: var(--primary);
+.logo-link {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
+.header-logo {
+  height: 50px;
+  width: auto;
+}
 
+.header-spacer {
+  width: 44px; /* Same as hamburger button for centering */
+}
 
-/* Hamburger icon */
-.topnav .icon {
+/* Desktop header - hidden on mobile */
+.desktop-header {
   display: none;
-  margin-left: auto;
+}
+
+/* Desktop nav - hidden on mobile */
+.desktop-nav {
+  display: none;
+}
+
+/* Mobile slide-out nav */
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+}
+
+.mobile-nav-overlay.open {
+  display: block;
+}
+
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background: white;
+  z-index: 999;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+}
+
+.mobile-nav.open {
+  left: 0;
+}
+
+.mobile-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.close-btn {
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+}
+
+.mobile-nav > a {
+  display: block;
+  padding: 15px 20px;
+  color: var(--dark);
+  text-decoration: none;
+  border-bottom: 1px solid #eee;
+  font-size: 16px;
+}
+
+.mobile-nav > a:hover,
+.mobile-nav > a.active {
+  background: var(--light-bg);
+  color: var(--primary);
+}
+
+/* Mobile subnav */
+.mobile-subnav {
+  border-bottom: 1px solid #eee;
+}
+
+.mobile-subnav-btn {
+  display: block;
+  padding: 15px 20px;
+  color: var(--dark);
+  text-decoration: none;
+  font-size: 16px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
   cursor: pointer;
 }
-@media (max-width: 768px) {
-  /* Hide every nav link & dropdown button */
-  .topnav a,
-  .topnav .subnav {
+
+.mobile-subnav-btn:hover {
+  background: var(--light-bg);
+}
+
+.mobile-subnav-content {
+  display: none;
+  background: #f8f8f8;
+}
+
+.mobile-subnav-content.open {
+  display: block;
+}
+
+.mobile-subnav-content a {
+  display: block;
+  padding: 12px 20px 12px 35px;
+  color: var(--dark);
+  text-decoration: none;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+.mobile-subnav-content a:hover {
+  background: var(--hover-bg);
+}
+
+/* ============================================
+   DESKTOP STYLES (768px and up)
+   ============================================ */
+
+@media (min-width: 769px) {
+  /* Hide mobile elements */
+  .mobile-header {
     display: none;
   }
-  /* But show the hamburger icon */
-  .topnav .icon {
+  
+  .mobile-nav,
+  .mobile-nav-overlay {
+    display: none !important;
+  }
+  
+  /* Show desktop header */
+  .desktop-header {
     display: block;
-    margin-left: auto;
+    text-align: center;
+    padding: 20px;
+    background: white;
+  }
+  
+  .header-logo-desktop {
+    height: 100px;
+    width: auto;
+  }
+  
+  /* Desktop navigation */
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    background: var(--dark);
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .desktop-nav a,
+  .desktop-nav .subnavbtn {
+    color: #fff;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: background var(--transition);
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .desktop-nav a.active,
+  .desktop-nav a:hover,
+  .desktop-nav .subnavbtn:hover {
+    background: var(--primary);
+  }
+  
+  /* Desktop subnav dropdown */
+  .subnav {
+    position: relative;
+  }
+  
+  .subnav-content {
+    display: none;
+    position: absolute;
+    background: var(--primary);
+    min-width: 160px;
+    left: 0;
+    top: 100%;
+    z-index: 101;
+  }
+  
+  .subnav:hover .subnav-content {
+    display: block;
+  }
+  
+  .subnav-content a {
+    color: #fff;
+    padding: 12px 16px;
+    display: block;
+    text-decoration: none;
+  }
+  
+  .subnav-content a:hover {
+    background: #eee;
+    color: var(--dark);
   }
 }
 
-/* When toggled open, stack them vertically */
-.topnav.responsive {
-  flex-direction: column;
-}
-.topnav.responsive a,
-.topnav.responsive .subnav {
-  display: block;
-}
+/* ============================================
+   TABLES
+   ============================================ */
 
-/* Subnav dropdown */
-.subnav {
-  position: relative;
-}
-.subnav-content {
-  display: none;
-  position: absolute;
-  background: var(--primary);
-  width: 100%;
-  left: 0;
-  top: 100%;
-}
-.subnav:hover .subnav-content {
-  display: block;
-}
-.subnav-content a {
-  color: #fff;
-  padding: 10px 16px;
-  display: block;
-  text-decoration: none;
-  transition: background var(--transition), color var(--transition);
-}
-.subnav-content a:hover {
-  background: #eee;
-  color: var(--dark);
-}
-
-/* Tables */
 .table-responsive {
-  overflow-x: auto;               /* allow horizontal scroll */
-  -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table.sortable {
-  width: auto;                     /* size to content, not 100% */
-  min-width: 100%;                 /* at least full container width */
+  width: auto;
+  min-width: 100%;
+  border-collapse: collapse;
 }
+
 table.sortable th,
 table.sortable td {
   padding: 12px;
   border: 1px solid #ddd;
   transition: background var(--transition);
 }
+
 table.sortable th {
   background: var(--primary);
   color: #fff;
 }
+
 table.sortable tr:nth-child(even) {
   background: var(--light-bg);
 }
+
 table.sortable tr:hover {
   background: var(--hover-bg);
 }
 
-/* Icon images in tables */
+/* ============================================
+   AVATARS & LINKS
+   ============================================ */
+
 .icon-img {
   width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
   vertical-align: middle;
-  margin-right: .5rem;
+  margin-right: 0.5rem;
 }
 
 /* hide the native <select> once Select2 has taken over */
@@ -150,7 +324,6 @@ table.sortable tr:hover {
   display: none !important;
 }
 
-/* force the Select2 container to fill its parent */
 .select2-container {
   width: 100% !important;
 }
@@ -165,6 +338,7 @@ table.sortable tr:hover {
   align-items: center;
   gap: 8px;
 }
+
 .igf-link:hover {
   color: var(--dark);
   text-decoration: underline;
@@ -180,6 +354,7 @@ table.sortable tr:hover {
   vertical-align: middle;
   background-color: #f0f0f0;
 }
+
 .igf-avatar-placeholder {
   width: 32px;
   height: 32px;
@@ -205,6 +380,7 @@ table.sortable tr:hover {
   align-items: center;
   gap: 8px;
 }
+
 .golfer-link:hover {
   color: #1a365d;
   text-decoration: underline;
@@ -221,69 +397,27 @@ table.sortable tr:hover {
   background-color: #e8f0f8;
 }
 
-/* Make icon-img also circular for consistency */
-.icon-img {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  vertical-align: middle;
-  margin-right: .5rem;
+/* ============================================
+   CONTAINER & GENERAL
+   ============================================ */
+
+.container {
+  padding: 15px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 /* ============================================
-   MOBILE RESPONSIVE STYLES
+   MOBILE RESPONSIVE ADJUSTMENTS
    ============================================ */
 
-/* Base container padding for mobile */
-.container {
-  padding: 0 15px;
-}
-
-/* Mobile-first responsive breakpoints */
 @media (max-width: 768px) {
-  /* Header logo smaller on mobile */
-  .header-image {
-    height: 70px;
-    margin-bottom: 0.5rem;
-  }
-  
-  /* Navigation improvements */
-  .topnav {
-    padding: 0;
-  }
-  
-  .topnav.responsive {
-    align-items: stretch;
-  }
-  
-  .topnav.responsive a {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    text-align: left;
-  }
-  
-  .topnav.responsive .subnav {
-    width: 100%;
-  }
-  
-  .topnav.responsive .subnavbtn {
-    width: 100%;
-    text-align: left;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  
-  .topnav.responsive .subnav-content {
-    position: static;
-    background: rgba(0,0,0,0.2);
-  }
-  
-  .topnav.responsive .subnav-content a {
-    padding-left: 30px;
-  }
-  
-  /* Tables - card layout on mobile */
+  /* Tables */
   table.sortable {
     font-size: 14px;
   }
@@ -293,7 +427,7 @@ table.sortable tr:hover {
     padding: 8px 6px;
   }
   
-  /* Avatar sizes on mobile */
+  /* Avatars smaller */
   .igf-avatar,
   .golfer-avatar,
   .icon-img {
@@ -307,7 +441,6 @@ table.sortable tr:hover {
     font-size: 12px;
   }
   
-  /* Links - reduce gap on mobile */
   .igf-link,
   .golfer-link {
     gap: 6px;
@@ -333,7 +466,7 @@ table.sortable tr:hover {
     font-size: 1.8em !important;
   }
   
-  /* Stats grid - 2 columns on mobile */
+  /* Stats grid */
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
@@ -351,22 +484,16 @@ table.sortable tr:hover {
     font-size: 0.7em !important;
   }
   
-  /* Section titles */
   .section-title {
     font-size: 1.2em !important;
     margin: 20px 0 10px 0 !important;
   }
   
-  /* Charts */
   .chart-container {
     padding: 10px !important;
   }
   
-  .charts-row {
-    grid-template-columns: 1fr !important;
-  }
-  
-  /* Two column layouts become single column */
+  .charts-row,
   .two-column,
   .three-column {
     grid-template-columns: 1fr !important;
@@ -400,7 +527,7 @@ table.sortable tr:hover {
   
   .search-input {
     padding: 10px 12px 10px 40px !important;
-    font-size: 16px !important; /* Prevents zoom on iOS */
+    font-size: 16px !important;
   }
   
   .search-results {
@@ -416,7 +543,7 @@ table.sortable tr:hover {
     height: 36px !important;
   }
   
-  /* Strokes gained stats */
+  /* Strokes gained */
   .sg-stats {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
@@ -432,21 +559,6 @@ table.sortable tr:hover {
   
   .sg-stat .label {
     font-size: 0.6em !important;
-  }
-  
-  /* Results matrix - horizontal scroll */
-  .results-matrix {
-    margin: 0 -15px;
-    padding: 0 15px;
-  }
-  
-  .results-matrix table {
-    font-size: 12px;
-  }
-  
-  .results-matrix td {
-    min-width: 60px !important;
-    padding: 6px 4px !important;
   }
   
   /* Earnings grid */
@@ -481,7 +593,7 @@ table.sortable tr:hover {
   }
 }
 
-/* Extra small screens (phones in portrait) */
+/* Extra small screens */
 @media (max-width: 400px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -511,18 +623,13 @@ table.sortable tr:hover {
 
 /* Touch-friendly tap targets */
 @media (pointer: coarse) {
-  .topnav a,
-  .subnavbtn,
+  .mobile-nav > a,
+  .mobile-subnav-btn,
+  .mobile-subnav-content a,
   .search-result-item,
-  .member-card,
-  .igf-link,
-  .golfer-link {
+  .member-card {
     min-height: 44px;
     display: flex;
     align-items: center;
-  }
-  
-  table.sortable td a {
-    padding: 4px 0;
   }
 }

@@ -468,8 +468,6 @@
                                 <span class="result-cell result-top3">{{ pos }}</span>
                             {% elif pos in ['CUT', 'WD', 'DQ', 'MDF'] %}
                                 <span class="result-cell result-missed">{{ pos }}</span>
-                            {% elif pos|int <= 10 if pos|replace('T','')|int is defined else false %}
-                                <span class="result-cell result-top10">{{ pos }}</span>
                             {% else %}
                                 <span class="result-cell result-made-cut">{{ pos }}</span>
                             {% endif %}
