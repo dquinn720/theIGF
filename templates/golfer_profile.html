@@ -1,0 +1,643 @@
+{% extends "layout.html" %}
+{% block title %}{{ profile.player_name }} - Golfer Profile{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #2c5282 0%, #4a7ab8 100%);
+        border-radius: 12px;
+        color: white;
+    }
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        background-color: #3d6a9e;
+    }
+    .profile-image-placeholder {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: bold;
+        border: 4px solid rgba(255,255,255,0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .profile-info h1 {
+        margin: 0 0 5px 0;
+        font-size: 2.5em;
+    }
+    .profile-info .nickname {
+        font-size: 1.2em;
+        font-style: italic;
+        opacity: 0.9;
+        margin-bottom: 8px;
+    }
+    .profile-info .country {
+        font-size: 1em;
+        opacity: 0.8;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-card .stat-value {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #2c5282;
+    }
+    .stat-card .stat-label {
+        font-size: 0.75em;
+        color: #666;
+        margin-top: 5px;
+    }
+    .stat-card.highlight {
+        background: linear-gradient(135deg, #2c5282 0%, #4a7ab8 100%);
+    }
+    .stat-card.highlight .stat-value,
+    .stat-card.highlight .stat-label {
+        color: white;
+    }
+    .stat-card.gold {
+        background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+    }
+    .stat-card.gold .stat-value,
+    .stat-card.gold .stat-label {
+        color: #333;
+    }
+    
+    .section-title {
+        font-size: 1.4em;
+        margin: 30px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #2c5282;
+        color: #333;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .two-column {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    
+    .three-column {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    th {
+        background: #2c5282;
+        color: white;
+        padding: 12px 15px;
+        text-align: left;
+        font-size: 0.85em;
+    }
+    td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        font-size: 0.9em;
+    }
+    tr:hover {
+        background: #f5f5f5;
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .position-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.85em;
+    }
+    .position-1 { background: gold; color: #333; }
+    .position-2 { background: silver; color: #333; }
+    .position-3 { background: #cd7f32; color: white; }
+    .position-top10 { background: #28a745; color: white; }
+    .position-cut { background: #dc3545; color: white; }
+    
+    .undrafted-badge {
+        background: #6c757d;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2c5282;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .igf-link {
+        color: #1a5f2a;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .igf-link:hover {
+        text-decoration: underline;
+    }
+    
+    .no-data-message {
+        text-align: center;
+        color: #999;
+        padding: 20px;
+        font-style: italic;
+    }
+    
+    /* Strokes Gained Stats */
+    .sg-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .sg-stat {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .sg-stat .value {
+        font-size: 1.3em;
+        font-weight: bold;
+    }
+    .sg-stat .value.positive { color: #28a745; }
+    .sg-stat .value.negative { color: #dc3545; }
+    .sg-stat .label {
+        font-size: 0.7em;
+        color: #666;
+        margin-top: 3px;
+    }
+    
+    /* Results Matrix */
+    .results-matrix {
+        overflow-x: auto;
+    }
+    .results-matrix table {
+        min-width: 600px;
+    }
+    .results-matrix td {
+        text-align: center;
+        min-width: 80px;
+    }
+    .result-cell {
+        padding: 5px;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .result-win { background: gold; }
+    .result-top3 { background: #c0c0c0; }
+    .result-top10 { background: #d4edda; }
+    .result-made-cut { background: #e8f4f8; }
+    .result-missed { background: #f8d7da; color: #721c24; }
+    
+    @media (max-width: 600px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        .two-column, .charts-row, .three-column {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="javascript:history.back()" class="back-link">← Back</a>
+
+<!-- Profile Header -->
+<div class="profile-header">
+    <img src="{{ url_for('static', filename='images/' ~ dg_id ~ '.png') }}" 
+         alt="{{ profile.player_name }}" 
+         class="profile-image"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="profile-image-placeholder">
+        {{ profile.player_name[0] }}
+    </div>
+    <div class="profile-info">
+        <h1>{{ profile.player_name }}</h1>
+        {% if profile.nickname %}
+            <div class="nickname">"{{ profile.nickname }}"</div>
+        {% endif %}
+        <div class="country">{{ profile.country }}</div>
+    </div>
+</div>
+
+<!-- Career Stats -->
+<div class="stats-grid">
+    <div class="stat-card gold">
+        <div class="stat-value">{{ profile.major_wins }}</div>
+        <div class="stat-label">Major Wins</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.top_10s }}</div>
+        <div class="stat-label">Top 10s</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.total_tournaments }}</div>
+        <div class="stat-label">Majors Played</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.avg_finish }}</div>
+        <div class="stat-label">Avg Finish</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.made_cut_rate }}</div>
+        <div class="stat-label">Made Cut %</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.avg_igf_score }}</div>
+        <div class="stat-label">Avg IGF Score</div>
+    </div>
+</div>
+
+<!-- IGF Draft Stats -->
+<h2 class="section-title">IGF Draft History</h2>
+<div class="stats-grid">
+    <div class="stat-card highlight">
+        <div class="stat-value">{{ profile.times_drafted }}</div>
+        <div class="stat-label">Times Drafted</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.draft_rate }}</div>
+        <div class="stat-label">Draft Rate</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.avg_draft_position }}</div>
+        <div class="stat-label">Avg Pick</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.best_draft_position }}</div>
+        <div class="stat-label">Best Pick</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.igf_wins }}</div>
+        <div class="stat-label">IGF Wins</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.first_drafted if profile.first_drafted != 'Never' else '-' }}</div>
+        <div class="stat-label">First Drafted</div>
+    </div>
+</div>
+
+<!-- DataGolf Strokes Gained Stats -->
+{% if dg_stats %}
+<h2 class="section-title">Current Strokes Gained (DataGolf)</h2>
+<div class="sg-stats">
+    <div class="sg-stat">
+        <div class="value {% if dg_stats.sg_ott > 0 %}positive{% else %}negative{% endif %}">
+            {{ '+' if dg_stats.sg_ott > 0 else '' }}{{ dg_stats.sg_ott }}
+        </div>
+        <div class="label">Off the Tee</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value {% if dg_stats.sg_app > 0 %}positive{% else %}negative{% endif %}">
+            {{ '+' if dg_stats.sg_app > 0 else '' }}{{ dg_stats.sg_app }}
+        </div>
+        <div class="label">Approach</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value {% if dg_stats.sg_arg > 0 %}positive{% else %}negative{% endif %}">
+            {{ '+' if dg_stats.sg_arg > 0 else '' }}{{ dg_stats.sg_arg }}
+        </div>
+        <div class="label">Around Green</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value {% if dg_stats.sg_putt > 0 %}positive{% else %}negative{% endif %}">
+            {{ '+' if dg_stats.sg_putt > 0 else '' }}{{ dg_stats.sg_putt }}
+        </div>
+        <div class="label">Putting</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value {% if dg_stats.sg_total > 0 %}positive{% else %}negative{% endif %}" style="font-size:1.5em;">
+            {{ '+' if dg_stats.sg_total > 0 else '' }}{{ dg_stats.sg_total }}
+        </div>
+        <div class="label">Total</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value">{{ dg_stats.driving_dist }}</div>
+        <div class="label">Driving Dist</div>
+    </div>
+    <div class="sg-stat">
+        <div class="value">{{ dg_stats.driving_acc }}%</div>
+        <div class="label">Driving Acc</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Charts -->
+<div class="charts-row">
+    <div>
+        <h2 class="section-title">IGF Score by Year</h2>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+    
+    {% if profile.times_drafted > 0 %}
+    <div>
+        <h2 class="section-title">Draft Position by Year</h2>
+        <div class="chart-container">
+            <canvas id="draftChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Performance by Tournament -->
+<h2 class="section-title">Performance by Major</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Tournament</th>
+            <th>Apps</th>
+            <th>Cuts Made</th>
+            <th>Cut %</th>
+            <th>Avg Finish</th>
+            <th>Best</th>
+            <th>Wins</th>
+            <th>Top 3</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t in profile.tournament_breakdown %}
+        <tr>
+            <td>{{ t.tournament }}</td>
+            <td>{{ t.appearances }}</td>
+            <td>{{ t.made_cuts }}</td>
+            <td>{{ t.cut_pct }}%</td>
+            <td>{{ t.avg_finish }}</td>
+            <td>
+                {% if t.best_finish == 1 %}
+                    <span class="position-badge position-1">🏆 1</span>
+                {% elif t.best_finish != '-' %}
+                    {{ t.best_finish }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ t.wins }}</td>
+            <td>{{ t.top3 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Results Matrix by Year -->
+<h2 class="section-title">Results by Year</h2>
+<div class="results-matrix">
+    <table>
+        <thead>
+            <tr>
+                <th>Year</th>
+                <th>Masters</th>
+                <th>PGA</th>
+                <th>US Open</th>
+                <th>The Open</th>
+                <th>PLAYERS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for year_data in profile.results_by_year %}
+            <tr>
+                <td><strong>{{ year_data.year }}</strong></td>
+                {% for tourney in ['The Masters', 'PGA Championship', 'U.S. Open', 'The Open Championship', 'THE PLAYERS Championship'] %}
+                    <td>
+                        {% if tourney in year_data.results %}
+                            {% set pos = year_data.results[tourney].position %}
+                            {% if pos in ['1', 'T1'] %}
+                                <span class="result-cell result-win">🏆 {{ pos }}</span>
+                            {% elif pos in ['2', 'T2', '3', 'T3'] %}
+                                <span class="result-cell result-top3">{{ pos }}</span>
+                            {% elif pos in ['CUT', 'WD', 'DQ', 'MDF'] %}
+                                <span class="result-cell result-missed">{{ pos }}</span>
+                            {% elif pos|int <= 10 if pos|replace('T','')|int is defined else false %}
+                                <span class="result-cell result-top10">{{ pos }}</span>
+                            {% else %}
+                                <span class="result-cell result-made-cut">{{ pos }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #ccc;">-</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Two Column Section -->
+<div class="two-column">
+    <!-- Who Drafts This Golfer -->
+    <div>
+        <h2 class="section-title">Drafted By</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>IGFer</th>
+                    <th>Times</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for drafter in profile.drafted_by %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('igf_profile', igf_name=drafter.igf_golfer) }}" class="igf-link">
+                            {{ drafter.igf_golfer }}
+                        </a>
+                    </td>
+                    <td>{{ drafter.times }}</td>
+                </tr>
+                {% endfor %}
+                {% if not profile.drafted_by %}
+                <tr>
+                    <td colspan="2" class="no-data-message">Never been drafted</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Full Tournament History (scrollable) -->
+    <div>
+        <h2 class="section-title">Full Tournament History</h2>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Tournament</th>
+                        <th>Finish</th>
+                        <th>IGF</th>
+                        <th>By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in profile.tournament_history %}
+                    <tr>
+                        <td>{{ row.year }}</td>
+                        <td>{{ row.tournament[:15] }}{% if row.tournament|length > 15 %}...{% endif %}</td>
+                        <td>
+                            {% if row.position == '1' or row.position == 'T1' %}
+                                <span class="position-badge position-1">🏆</span>
+                            {% elif row.position in ['CUT', 'WD', 'DQ', 'MDF'] %}
+                                <span class="position-badge position-cut">{{ row.position }}</span>
+                            {% else %}
+                                {{ row.position }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.igf_score if row.igf_score else '-' }}</td>
+                        <td>
+                            {% if row.drafted_by != '-' %}
+                                <a href="{{ url_for('igf_profile', igf_name=row.drafted_by) }}" class="igf-link">
+                                    {{ row.drafted_by.split()[0] }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Performance trend chart (IGF Score)
+const perfCtx = document.getElementById('performanceChart').getContext('2d');
+const performanceData = {{ profile.yearly_performance | tojson }};
+
+if (performanceData.length > 0) {
+    new Chart(perfCtx, {
+        type: 'line',
+        data: {
+            labels: performanceData.map(d => d.year),
+            datasets: [{
+                label: 'Avg IGF Score',
+                data: performanceData.map(d => d.avg_score),
+                borderColor: '#2c5282',
+                backgroundColor: 'rgba(44, 82, 130, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Lower is Better' }
+            },
+            scales: {
+                y: {
+                    reverse: true,
+                    title: { display: true, text: 'IGF Score' }
+                }
+            }
+        }
+    });
+} else {
+    document.getElementById('performanceChart').parentElement.innerHTML = '<p class="no-data-message">No performance data</p>';
+}
+
+// Draft position chart
+{% if profile.times_drafted > 0 %}
+const draftCtx = document.getElementById('draftChart').getContext('2d');
+const draftData = {{ profile.draft_position_by_year | tojson }};
+
+if (draftData.length > 0) {
+    new Chart(draftCtx, {
+        type: 'line',
+        data: {
+            labels: draftData.map(d => d.year),
+            datasets: [{
+                label: 'Avg Draft Position',
+                data: draftData.map(d => d.avg_pick),
+                borderColor: '#1a5f2a',
+                backgroundColor: 'rgba(26, 95, 42, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Lower = Earlier Pick' }
+            },
+            scales: {
+                y: {
+                    reverse: true,
+                    min: 1,
+                    max: 40,
+                    title: { display: true, text: 'Pick #' }
+                }
+            }
+        }
+    });
+}
+{% endif %}
+</script>
+
+{% endblock %}
