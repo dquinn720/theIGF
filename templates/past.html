@@ -49,7 +49,15 @@
                           </a>
                         </td>
                       {% elif loop.index > 2 %}
-					<td><img src="{{url_for('static',filename='images/' + igf_data_dg[rowloop.index0][loop.index0]|string + '.png') }}" style="width:40px"/> {{ cell | safe}} </td>
+                        {% set dg_id = igf_data_dg[rowloop.index0][loop.index0]|string %}
+                        <td>
+                          <a href="{{ url_for('golfer_profile', dg_id=dg_id) }}" class="golfer-link">
+                            <img src="{{ url_for('static', filename='images/' ~ dg_id ~ '.png') }}" 
+                                 class="golfer-avatar"
+                                 onerror="this.style.display='none';">
+                            {{ cell | safe }}
+                          </a>
+                        </td>
 				    {% else %}
 					<td>{{ cell | safe}} </td>
 				    {% endif %}
@@ -68,10 +76,18 @@
                       {% endfor%}
                   </tr>
                   {% for row in tournament_data %}
+                  {% set dg_id = row[-1]|string|replace('.0','') %}
                   <tr>
                       {% for cell in row %}
 				{% if loop.index == 1 %}
-                      		<td><img src="{{url_for('static',filename='images/' + row[loop.length-1]|string + '.png') }}" style="width:40px"/> {{ cell | safe}} </td>
+                      		<td>
+                      		  <a href="{{ url_for('golfer_profile', dg_id=dg_id) }}" class="golfer-link">
+                      		    <img src="{{ url_for('static', filename='images/' ~ dg_id ~ '.png') }}" 
+                      		         class="golfer-avatar"
+                      		         onerror="this.style.display='none';">
+                      		    {{ cell | safe }}
+                      		  </a>
+                      		</td>
                       	{% elif loop.index0 == 1 %}
                         <td>
                           <a href="{{ url_for('igf_profile', igf_name=cell) }}" class="igf-link">
