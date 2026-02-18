@@ -43,11 +43,22 @@
         </thead>
         <tbody>
           {% for row in igf_data %}
-          {# store the outer loop’s zero‑based index #}
           {% set outer_index = loop.index0 %}
+          {% set igf_name = row[0] %}
           <tr>
             {% for cell in row %}
-              {% if loop.index > 2 %}
+              {% if loop.index0 == 0 %}
+                <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
+                  <a href="{{ url_for('igf_profile', igf_name=cell) }}" class="igf-link">
+                    <img src="{{ url_for('static', filename='images/igf/' ~ (cell|igf_image_name) ~ '.png') }}" 
+                         alt="{{ cell }}" 
+                         class="igf-avatar"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                    <span class="igf-avatar-placeholder" style="display:none;">{{ cell[0] }}</span>
+                    {{ cell }}
+                  </a>
+                </td>
+              {% elif loop.index > 2 %}
                 <td data-label="{{ igf_leaderboard_heads[loop.index0] }}">
                   <img
                     src="{{ url_for(
@@ -93,6 +104,17 @@
                         filename='images/' ~ row[-1]|replace('.0','') ~ '.png') }}"
                          alt="" class="icon-img">
                     {{ cell }}
+                  </td>
+                {% elif loop.index0 == 1 %}
+                  <td data-label="{{ headings[loop.index0] }}">
+                    <a href="{{ url_for('igf_profile', igf_name=cell) }}" class="igf-link">
+                      <img src="{{ url_for('static', filename='images/igf/' ~ (cell|igf_image_name) ~ '.png') }}" 
+                           alt="{{ cell }}" 
+                           class="igf-avatar"
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+                      <span class="igf-avatar-placeholder" style="display:none;">{{ cell[0] }}</span>
+                      {{ cell }}
+                    </a>
                   </td>
                 {% elif not loop.last %}
                   <td data-label="{{ headings[loop.index0] }}">

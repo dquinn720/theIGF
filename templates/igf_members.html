@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+{% block title %}IGF Members{% endblock %}
+
+{% block head %}
+<style>
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+    }
+    
+    .member-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    .member-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    
+    .member-card-header {
+        background: linear-gradient(135deg, #1a5f2a 0%, #2d8a3e 100%);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .member-avatar-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .member-avatar-placeholder {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+        border: 3px solid rgba(255,255,255,0.5);
+    }
+    
+    .member-name {
+        color: white;
+        font-size: 1.3em;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .member-since {
+        color: rgba(255,255,255,0.8);
+        font-size: 0.85em;
+    }
+    
+    .member-card-body {
+        padding: 15px 20px;
+    }
+    
+    .member-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .member-stat {
+        text-align: center;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .member-stat-value {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #1a5f2a;
+    }
+    
+    .member-stat-label {
+        font-size: 0.75em;
+        color: #666;
+        text-transform: uppercase;
+    }
+    
+    .page-header {
+        text-align: center;
+        padding: 30px 0;
+    }
+    
+    .page-header h1 {
+        color: #1a5f2a;
+        margin-bottom: 10px;
+    }
+    
+    .page-header p {
+        color: #666;
+        font-size: 1.1em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>IGF Members</h1>
+    <p>Click on a member to view their full profile and stats</p>
+</div>
+
+<div class="members-grid">
+    {% for member in members %}
+    <a href="{{ url_for('igf_profile', igf_name=member.name) }}" class="member-card">
+        <div class="member-card-header">
+            <img src="{{ url_for('static', filename='images/igf/' ~ (member.name|igf_image_name) ~ '.png') }}" 
+                 alt="{{ member.name }}" 
+                 class="member-avatar-img"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="member-avatar-placeholder" style="display:none;">
+                {{ member.name[0] }}
+            </div>
+            <div>
+                <h3 class="member-name">{{ member.name }}</h3>
+                <div class="member-since">Member since {{ member.first_year }}</div>
+            </div>
+        </div>
+        <div class="member-card-body">
+            <div class="member-stats">
+                <div class="member-stat">
+                    <div class="member-stat-value">{{ member.wins }}</div>
+                    <div class="member-stat-label">Wins</div>
+                </div>
+                <div class="member-stat">
+                    <div class="member-stat-value">{{ member.runner_ups }}</div>
+                    <div class="member-stat-label">Runner-Ups</div>
+                </div>
+                <div class="member-stat">
+                    <div class="member-stat-value">{{ member.tournaments_played }}</div>
+                    <div class="member-stat-label">Tournaments</div>
+                </div>
+                <div class="member-stat">
+                    <div class="member-stat-value">{{ member.total_earnings }}</div>
+                    <div class="member-stat-label">Earnings</div>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

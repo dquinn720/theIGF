@@ -1,0 +1,507 @@
+{% extends "layout.html" %}
+{% block title %}{{ igf_name }} - IGF Profile{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #1a5f2a 0%, #2d8a3e 100%);
+        border-radius: 12px;
+        color: white;
+    }
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .profile-image-placeholder {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        font-weight: bold;
+        border: 4px solid rgba(255,255,255,0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .profile-info h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5em;
+    }
+    .profile-info .tagline {
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+    .stat-card {
+        background: #f8f9fa;
+        padding: 18px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stat-card .stat-value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #1a5f2a;
+    }
+    .stat-card .stat-label {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .section-title {
+        font-size: 1.4em;
+        margin: 30px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #1a5f2a;
+        color: #333;
+    }
+    
+    .chart-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .two-column {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    th {
+        background: #1a5f2a;
+        color: white;
+        padding: 12px 15px;
+        text-align: left;
+        font-size: 0.9em;
+    }
+    td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    tr:hover {
+        background: #f5f5f5;
+    }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .win-badge {
+        background: gold;
+        color: #333;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.85em;
+    }
+    .runner-up-badge {
+        background: silver;
+        color: #333;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.85em;
+    }
+    .cum-badge {
+        background: #1a5f2a;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.85em;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #1a5f2a;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .earnings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .earnings-item {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .earnings-item .tournament {
+        font-size: 0.75em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    .earnings-item .amount {
+        font-weight: bold;
+        color: #1a5f2a;
+    }
+    
+    @media (max-width: 600px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        .two-column {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="javascript:history.back()" class="back-link">← Back</a>
+
+<!-- Profile Header -->
+<div class="profile-header">
+    <img src="{{ url_for('static', filename='images/igf/' ~ (igf_name|igf_image_name) ~ '.png') }}" 
+         alt="{{ igf_name }}" 
+         class="profile-image"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="profile-image-placeholder" style="display:none;">
+        {{ igf_name[0] }}
+    </div>
+    <div class="profile-info">
+        <h1>{{ igf_name }}</h1>
+        <div class="tagline">IGF Member since {{ profile.first_year }}</div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.total_wins }}</div>
+        <div class="stat-label">Tournament Wins</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.total_runner_ups }}</div>
+        <div class="stat-label">Runner-Ups</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.cum_wins }}</div>
+        <div class="stat-label">CUM Wins</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.total_earnings }}</div>
+        <div class="stat-label">Total Earnings</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.avg_igf_score }}</div>
+        <div class="stat-label">Avg IGF Score</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ profile.tournaments_played }}</div>
+        <div class="stat-label">Tournaments</div>
+    </div>
+</div>
+
+<!-- Earnings Breakdown -->
+<h2 class="section-title">Earnings Breakdown</h2>
+<div class="earnings-grid">
+    <div class="earnings-item">
+        <div class="tournament">THE PLAYERS</div>
+        <div class="amount">{{ profile.earnings_breakdown.tpc }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">The Masters</div>
+        <div class="amount">{{ profile.earnings_breakdown.masters }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">PGA Championship</div>
+        <div class="amount">{{ profile.earnings_breakdown.pga }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">U.S. Open</div>
+        <div class="amount">{{ profile.earnings_breakdown.us_open }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">The Open</div>
+        <div class="amount">{{ profile.earnings_breakdown.open_champ }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">CUM</div>
+        <div class="amount">{{ profile.earnings_breakdown.cum }}</div>
+    </div>
+</div>
+
+<!-- Wins Breakdown by Tournament -->
+<h2 class="section-title">Wins by Tournament</h2>
+<div class="earnings-grid">
+    <div class="earnings-item">
+        <div class="tournament">THE PLAYERS</div>
+        <div class="amount">{{ profile.wins_breakdown.tpc }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">The Masters</div>
+        <div class="amount">{{ profile.wins_breakdown.masters }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">PGA Championship</div>
+        <div class="amount">{{ profile.wins_breakdown.pga }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">U.S. Open</div>
+        <div class="amount">{{ profile.wins_breakdown.us_open }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">The Open</div>
+        <div class="amount">{{ profile.wins_breakdown.open_champ }}</div>
+    </div>
+    <div class="earnings-item">
+        <div class="tournament">CUM</div>
+        <div class="amount">{{ profile.wins_breakdown.cum }}</div>
+    </div>
+</div>
+
+<!-- Performance Trend Chart -->
+<h2 class="section-title">CUM Performance Over Time</h2>
+<div class="chart-container">
+    <canvas id="performanceChart"></canvas>
+</div>
+
+<!-- Two Column Section -->
+<div class="two-column">
+    <!-- Favorite Golfers -->
+    <div>
+        <h2 class="section-title">Most Drafted Golfers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Golfer</th>
+                    <th>Times Drafted</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for golfer in profile.favorite_golfers %}
+                <tr>
+                    <td>{{ golfer.golfer_name }}</td>
+                    <td>{{ golfer.times_drafted }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Best Picks -->
+    <div>
+        <h2 class="section-title">Best Performing Picks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Golfer</th>
+                    <th>Times</th>
+                    <th>Avg Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for golfer in profile.best_picks %}
+                <tr>
+                    <td>{{ golfer.golfer_name }}</td>
+                    <td>{{ golfer.times_drafted }}</td>
+                    <td>{{ golfer.avg_score }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- CUM Rankings History -->
+<h2 class="section-title">CUM Rankings History</h2>
+<table class="sortable">
+    <thead>
+        <tr>
+            <th>Year</th>
+            <th>CUM Score</th>
+            <th>CUM Rank</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in profile.cum_rankings %}
+        <tr>
+            <td>{{ row.year }}</td>
+            <td>{{ row.cum_score }}</td>
+            <td>{{ row.cum_rank }}</td>
+            <td>
+                {% if row.cum_rank == 1 %}
+                    <span class="cum-badge">🏆 CUM CHAMP</span>
+                {% elif row.cum_rank == 2 %}
+                    <span class="runner-up-badge">🥈 2nd</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Tournament History Table -->
+<h2 class="section-title">Tournament History</h2>
+<table class="sortable">
+    <thead>
+        <tr>
+            <th>Year</th>
+            <th>Tournament</th>
+            <th>IGF Place</th>
+            <th>IGF Score</th>
+            <th>Result</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in profile.tournament_history %}
+        <tr>
+            <td>{{ row.year }}</td>
+            <td>{{ row.tournament }}</td>
+            <td>{{ row.igf_place }}</td>
+            <td>{{ row.igf_score }}</td>
+            <td>
+                {% if row.igf_place == 1 %}
+                    <span class="win-badge">🏆 WIN</span>
+                {% elif row.igf_place == 2 %}
+                    <span class="runner-up-badge">🥈 2nd</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- CUM by Year -->
+<h2 class="section-title">CUM Performance by Year</h2>
+<table class="sortable">
+    <thead>
+        <tr>
+            <th>Year</th>
+            <th>THE PLAYERS</th>
+            <th>The Masters</th>
+            <th>PGA Championship</th>
+            <th>U.S. Open</th>
+            <th>The Open</th>
+            <th>Total CUM</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in profile.cum_by_year %}
+        <tr>
+            <td>{{ row.year }}</td>
+            <td>{{ row.players }}</td>
+            <td>{{ row.masters }}</td>
+            <td>{{ row.pga }}</td>
+            <td>{{ row.us_open }}</td>
+            <td>{{ row.open_championship }}</td>
+            <td><strong>{{ row.total }}</strong></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Draft History -->
+<h2 class="section-title">Draft History</h2>
+<table class="sortable">
+    <thead>
+        <tr>
+            <th>Year</th>
+            <th>Tournament</th>
+            <th>Pick #</th>
+            <th>Golfer</th>
+            <th>Finish</th>
+            <th>IGF Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in profile.draft_history %}
+        <tr>
+            <td>{{ row.year }}</td>
+            <td>{{ row.tournament }}</td>
+            <td>{{ row.pick_number }}</td>
+            <td>{{ row.golfer_name }}</td>
+            <td>{{ row.position }}</td>
+            <td>{{ row.igf_score }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+// Performance trend chart
+const ctx = document.getElementById('performanceChart').getContext('2d');
+const performanceData = {{ profile.yearly_performance | tojson }};
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: performanceData.map(d => d.year),
+        datasets: [{
+            label: 'Total CUM Score',
+            data: performanceData.map(d => d.total_cum),
+            borderColor: '#1a5f2a',
+            backgroundColor: 'rgba(26, 95, 42, 0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 6,
+            pointHoverRadius: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Yearly CUM Score (Lower is Better)'
+            }
+        },
+        scales: {
+            y: {
+                reverse: true,
+                title: {
+                    display: true,
+                    text: 'CUM Score'
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

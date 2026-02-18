@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+{% block title %}Oops - Page Not Found{% endblock %}
+
+{% block head %}
+<style>
+    .error-container {
+        text-align: center;
+        padding: 60px 20px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .error-logo {
+        width: 180px;
+        height: auto;
+        margin-bottom: 30px;
+        opacity: 0.9;
+    }
+    
+    .error-title {
+        font-size: 2em;
+        color: #1a5f2a;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .error-message {
+        font-size: 1.1em;
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+    
+    .error-code {
+        display: inline-block;
+        background: #f0f0f0;
+        color: #999;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        margin-bottom: 25px;
+    }
+    
+    .error-home-btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #1a5f2a 0%, #2d8a3e 100%);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 15px rgba(26, 95, 42, 0.3);
+    }
+    
+    .error-home-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(26, 95, 42, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .error-suggestions {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #eee;
+    }
+    
+    .error-suggestions h3 {
+        font-size: 1em;
+        color: #888;
+        margin-bottom: 15px;
+        font-weight: normal;
+    }
+    
+    .error-suggestions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .error-suggestions li {
+        margin: 8px 0;
+    }
+    
+    .error-suggestions a {
+        color: #1a5f2a;
+        text-decoration: none;
+    }
+    
+    .error-suggestions a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container">
+    <img src="{{ url_for('static', filename='images/IGF_Logo.png') }}" alt="IGF Logo" class="error-logo">
+    
+    <div class="error-code">Error {{ error_code if error_code else '404' }}</div>
+    
+    <h1 class="error-title">Hmm, something wasn't right with that...</h1>
+    
+    <p class="error-message">
+        {% if message %}
+            {{ message }}
+        {% else %}
+            The page you're looking for doesn't exist or may have been moved. 
+            Let's get you back on the fairway.
+        {% endif %}
+    </p>
+    
+    <a href="/" class="error-home-btn">Back to Current Board</a>
+    
+    <div class="error-suggestions">
+        <h3>Maybe try one of these?</h3>
+        <ul>
+            <li><a href="/">Current Leaderboard</a></li>
+            <li><a href="/past">Past Boards</a></li>
+            <li><a href="/igf_members">IGF Members</a></li>
+            <li><a href="/champions">Champions</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
