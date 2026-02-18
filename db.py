@@ -858,3 +858,358 @@ def test_fun(datagolf_key, draft_year, tournament):
     igf_tuple = list(igf_leaderboard.itertuples(index=True, name=None))
     reduced_tuple = list(reduced.itertuples(index=True, name=None))
     return(igf_tuple, reduced_tuple, final_leaderboard_heads)
+
+
+# ============================================
+# IGF PROFILE PAGE FUNCTIONS
+# ============================================
+
+def get_igf_profile_data(igf_name):
+    """
+    Fetch all data needed for an IGFer's profile page.
+    Returns a dictionary with all profile sections, or None if IGFer not found.
+    """
+    engine = connect_tcp_socket()
+    
+    # First, verify this IGFer exists
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT DISTINCT igf_golfer FROM draft_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        if not result.fetchone():
+            return None
+    
+    profile = {}
+    
+    # Get first year in IGF
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT MIN(draft_year) FROM draft_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        profile['first_year'] = row[0] if row else 'N/A'
+    
+    # Get total tournaments played
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(DISTINCT draft_year || tournament) FROM draft_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        profile['tournaments_played'] = row[0] if row else 0
+    
+    # Get wins count from igf_leaderboards
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM igf_leaderboards WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 1"
+        )
+        row = result.fetchone()
+        profile['total_wins'] = row[0] if row else 0
+    
+    # Get runner-ups count
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM igf_leaderboards WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 2"
+        )
+        row = result.fetchone()
+        profile['total_runner_ups'] = row[0] if row else 0
+    
+    # Get CUM wins from cum_leaderboard table
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM cum_leaderboard WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND cum_rank = 1"
+        )
+        row = result.fetchone()
+        profile['cum_wins'] = row[0] if row else 0
+    
+    # Get total earnings
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COALESCE(tpc_payout,0) + COALESCE(master_payout,0) + COALESCE(pga_payout,0) + COALESCE(us_payout,0) + COALESCE(open_payout,0) + COALESCE(cum_payout,0) FROM igf_payouts WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        total = row[0] if row and row[0] else 0
+        profile['total_earnings'] = "${:,}".format(int(total))
+    
+    # Get average IGF score
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT AVG(igf_score) FROM igf_scores WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        avg = row[0] if row and row[0] else 0
+        profile['avg_igf_score'] = round(float(avg), 1) if avg else 'N/A'
+    
+    # Get tournament history with IGF place
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT i.draft_year, i.tournament, i.igf_rank, i.igf_score
+            FROM igf_leaderboards i
+            WHERE i.igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            ORDER BY i.draft_year DESC, i.tournament
+        """)
+        rows = result.fetchall()
+        profile['tournament_history'] = [
+            {
+                'year': row[0],
+                'tournament': row[1],
+                'igf_place': row[2],
+                'igf_score': row[3]
+            }
+            for row in rows
+        ]
+    
+    # Get CUM by year
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament_year,
+                SUM(CASE WHEN tournament='THE PLAYERS Championship' THEN igf_score ELSE 0 END) as players,
+                SUM(CASE WHEN tournament='The Masters' THEN igf_score ELSE 0 END) as masters,
+                SUM(CASE WHEN tournament='PGA Championship' THEN igf_score ELSE 0 END) as pga,
+                SUM(CASE WHEN tournament='U.S. Open' THEN igf_score ELSE 0 END) as us_open,
+                SUM(CASE WHEN tournament='The Open Championship' THEN igf_score ELSE 0 END) as open_championship,
+                SUM(igf_score) as total
+            FROM igf_scores
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            GROUP BY tournament_year
+            ORDER BY tournament_year DESC
+        """)
+        rows = result.fetchall()
+        profile['cum_by_year'] = [
+            {
+                'year': row[0],
+                'players': row[1],
+                'masters': row[2],
+                'pga': row[3],
+                'us_open': row[4],
+                'open_championship': row[5],
+                'total': row[6]
+            }
+            for row in rows
+        ]
+    
+    # Get yearly performance for chart
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT tournament_year, SUM(igf_score) as total_cum
+            FROM igf_scores
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            GROUP BY tournament_year
+            ORDER BY tournament_year ASC
+        """)
+        rows = result.fetchall()
+        profile['yearly_performance'] = [
+            {
+                'year': row[0],
+                'total_cum': int(row[1]) if row[1] else 0
+            }
+            for row in rows
+        ]
+    
+    # Get draft history with golfer results
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT d.draft_year, d.tournament, d.overall_selection, p.player_name, t.position, t.igf_score
+            FROM draft_results d
+            LEFT JOIN pga_golfers p ON d.dg_id = p.dg_id
+            LEFT JOIN tournament_results t ON d.dg_id = t.dg_id 
+                AND d.draft_year = t.tournament_year 
+                AND d.tournament = t.tournament
+            WHERE d.igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            ORDER BY d.draft_year DESC, d.tournament, d.overall_selection
+        """)
+        rows = result.fetchall()
+        profile['draft_history'] = [
+            {
+                'year': row[0],
+                'tournament': row[1],
+                'pick_number': row[2],
+                'golfer_name': row[3] or 'N/A',
+                'position': row[4] or '-',
+                'igf_score': row[5] or '-'
+            }
+            for row in rows
+        ]
+    
+    # Image URL (will look for /static/images/igf/{igf_name}.png)
+    # Naming convention: "B. Love" -> "b_love.png"
+    safe_name = igf_name.lower().replace(' ', '_').replace('.', '')
+    profile['image_url'] = '/static/images/igf/' + safe_name + '.png'
+    profile['safe_name'] = safe_name
+    
+    # Get CUM rank history
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT draft_year, cum, cum_rank
+            FROM cum_leaderboard
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            ORDER BY draft_year DESC
+        """)
+        rows = result.fetchall()
+        profile['cum_rankings'] = [
+            {
+                'year': row[0],
+                'cum_score': row[1],
+                'cum_rank': row[2]
+            }
+            for row in rows
+        ]
+    
+    # Get earnings breakdown by tournament
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT 
+                COALESCE(tpc_payout, 0) as tpc,
+                COALESCE(master_payout, 0) as masters,
+                COALESCE(pga_payout, 0) as pga,
+                COALESCE(us_payout, 0) as us_open,
+                COALESCE(open_payout, 0) as open_champ,
+                COALESCE(cum_payout, 0) as cum
+            FROM igf_payouts
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
+        """)
+        row = result.fetchone()
+        if row:
+            profile['earnings_breakdown'] = {
+                'tpc': "${:,}".format(int(row[0])),
+                'masters': "${:,}".format(int(row[1])),
+                'pga': "${:,}".format(int(row[2])),
+                'us_open': "${:,}".format(int(row[3])),
+                'open_champ': "${:,}".format(int(row[4])),
+                'cum': "${:,}".format(int(row[5]))
+            }
+        else:
+            profile['earnings_breakdown'] = {
+                'tpc': "$0", 'masters': "$0", 'pga': "$0", 
+                'us_open': "$0", 'open_champ': "$0", 'cum': "$0"
+            }
+    
+    # Get wins breakdown by tournament from igf_winners table
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT 
+                COALESCE(tpc_wins, 0) as tpc,
+                COALESCE(master_wins, 0) as masters,
+                COALESCE(pga_wins, 0) as pga,
+                COALESCE(us_wins, 0) as us_open,
+                COALESCE(open_wins, 0) as open_champ,
+                COALESCE(cum_wins, 0) as cum
+            FROM igf_winners
+            WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
+        """)
+        row = result.fetchone()
+        if row:
+            profile['wins_breakdown'] = {
+                'tpc': int(row[0]),
+                'masters': int(row[1]),
+                'pga': int(row[2]),
+                'us_open': int(row[3]),
+                'open_champ': int(row[4]),
+                'cum': int(row[5])
+            }
+        else:
+            profile['wins_breakdown'] = {
+                'tpc': 0, 'masters': 0, 'pga': 0, 
+                'us_open': 0, 'open_champ': 0, 'cum': 0
+            }
+    
+    # Get favorite golfers (most drafted)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT p.player_name, COUNT(*) as times_drafted
+            FROM draft_results d
+            JOIN pga_golfers p ON d.dg_id = p.dg_id
+            WHERE d.igf_golfer = '""" + igf_name.replace("'", "''") + """'
+            GROUP BY p.player_name
+            ORDER BY times_drafted DESC
+            LIMIT 10
+        """)
+        rows = result.fetchall()
+        profile['favorite_golfers'] = [
+            {
+                'golfer_name': row[0],
+                'times_drafted': row[1]
+            }
+            for row in rows
+        ]
+    
+    # Get best performing picks (lowest avg IGF score among golfers drafted 2+ times)
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT p.player_name, COUNT(*) as times_drafted, AVG(t.igf_score) as avg_score
+            FROM draft_results d
+            JOIN pga_golfers p ON d.dg_id = p.dg_id
+            LEFT JOIN tournament_results t ON d.dg_id = t.dg_id 
+                AND d.draft_year = t.tournament_year 
+                AND d.tournament = t.tournament
+            WHERE d.igf_golfer = '""" + igf_name.replace("'", "''") + """'
+                AND t.igf_score IS NOT NULL
+            GROUP BY p.player_name
+            HAVING COUNT(*) >= 2
+            ORDER BY avg_score ASC
+            LIMIT 5
+        """)
+        rows = result.fetchall()
+        profile['best_picks'] = [
+            {
+                'golfer_name': row[0],
+                'times_drafted': row[1],
+                'avg_score': round(float(row[2]), 1) if row[2] else 'N/A'
+            }
+            for row in rows
+        ]
+    
+    conn.close()
+    return profile
+
+
+def get_all_igf_members():
+    """
+    Get a list of all IGF members for navigation/listing purposes.
+    """
+    engine = connect_tcp_socket()
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT DISTINCT igf_golfer FROM draft_results ORDER BY igf_golfer"
+        )
+        members = [row[0] for row in result.fetchall()]
+    conn.close()
+    return members
+
+
+def get_igf_member_summary():
+    """
+    Get summary stats for all IGF members for the members listing page.
+    """
+    engine = connect_tcp_socket()
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT 
+                d.igf_golfer,
+                MIN(d.draft_year) as first_year,
+                COUNT(DISTINCT d.draft_year || d.tournament) as tournaments_played,
+                COALESCE(SUM(CASE WHEN l.igf_rank = 1 THEN 1 ELSE 0 END), 0) as wins,
+                COALESCE(SUM(CASE WHEN l.igf_rank = 2 THEN 1 ELSE 0 END), 0) as runner_ups,
+                COALESCE(p.tpc_payout, 0) + COALESCE(p.master_payout, 0) + COALESCE(p.pga_payout, 0) + 
+                COALESCE(p.us_payout, 0) + COALESCE(p.open_payout, 0) + COALESCE(p.cum_payout, 0) as total_earnings
+            FROM draft_results d
+            LEFT JOIN igf_leaderboards l ON d.igf_golfer = l.igf_golfer 
+                AND d.draft_year = l.draft_year 
+                AND d.tournament = l.tournament
+            LEFT JOIN igf_payouts p ON d.igf_golfer = p.igf_golfer
+            GROUP BY d.igf_golfer, p.tpc_payout, p.master_payout, p.pga_payout, p.us_payout, p.open_payout, p.cum_payout
+            ORDER BY total_earnings DESC NULLS LAST
+        """)
+        rows = result.fetchall()
+        members = [
+            {
+                'name': row[0],
+                'first_year': row[1],
+                'tournaments_played': row[2],
+                'wins': row[3],
+                'runner_ups': row[4],
+                'total_earnings': "${:,}".format(int(row[5])) if row[5] else "$0"
+            }
+            for row in rows
+        ]
+    conn.close()
+    return members

@@ -5,6 +5,14 @@ import os
 
 app = Flask(__name__)
 
+# Custom Jinja filter to convert IGF name to image filename
+# "B. Love" -> "b_love"
+@app.template_filter('igf_image_name')
+def igf_image_name_filter(igf_name):
+    if igf_name:
+        return igf_name.lower().replace(' ', '_').replace('.', '')
+    return ''
+
 igf_leaderboard_heads = ('IGF Golfer', 'IGF Score', '1st', '2nd', '3rd', '4th')
 live_leaderboard_heads = ('Pro Golfer', 'IGF Golfer', 'Pick Number', 'Position', 'Thru', 'Today', 'Make Cut %', 'Total','IGF Score')
 live_leaderboard_heads_new = ('Golfer', 'IGFer', 'Pick', 'Pos', 'Thru', 'Today', 'Cut %', 'D. Dist', 'D. Accu', 'GIR','Great Shots','Poor Shots','Scrambling','Total','IGF Score')
@@ -247,6 +255,56 @@ def research():
         'research.html', 
         golfer_stats=golfer_stats
     )
+
+@app.route('/igf/<igf_name>', methods=["GET"])
+def igf_profile(igf_name):
+    from db import get_igf_profile_data
+    
+    # Get all profile data for this IGFer
+    profile_data = get_igf_profile_data(igf_name)
+    
+    if profile_data is None:
+        return render_template('404.html', message=f"IGFer '{igf_name}' not found"), 404
+    
+    return render_template(
+        'igf_profile.html',
+        igf_name=igf_name,
+        profile=profile_data
+    )
+
+@app.route('/igf_members', methods=["GET"])
+def igf_members():
+    from db import get_all_igf_members, get_igf_member_summary
+    
+    members = get_igf_member_summary()
+    
+    return render_template(
+        'igf_members.html',
+        members=members
+    )
+
+# Error Handlers
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', error_code=404), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('404.html', 
+                           error_code=500, 
+                           message="Something went wrong on our end. The greenskeeper has been notified."), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Pass through HTTP errors
+    if hasattr(e, 'code'):
+        if e.code == 404:
+            return render_template('404.html', error_code=404), 404
+        return render_template('404.html', error_code=e.code, message=str(e)), e.code
+    # Handle non-HTTP exceptions
+    return render_template('404.html', 
+                           error_code=500, 
+                           message="An unexpected error occurred. Please try again."), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
