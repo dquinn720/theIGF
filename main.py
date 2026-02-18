@@ -128,12 +128,16 @@ def golfer_results():
 def golfer_search():
     from flask import jsonify
     from db import search_golfers
-    query = request.args.get('q', '').strip()
-    if len(query) < 2:
-        return jsonify({'results': []})
-    
-    results = search_golfers(query)
-    return jsonify({'results': results})
+    try:
+        query = request.args.get('q', '').strip()
+        if len(query) < 2:
+            return jsonify({'results': []})
+        
+        results = search_golfers(query)
+        return jsonify({'results': results})
+    except Exception as e:
+        print(f"API Search error: {e}")
+        return jsonify({'results': [], 'error': str(e)})
 
 @app.route('/champions', methods=["GET"])
 def champions():
@@ -149,12 +153,14 @@ def igf_results():
         view_by = request.form.get("view_by")
         if view_by == 'first':
             head_str = ' Winners'
+            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Total')
         elif view_by == 'second':
             head_str = ' Runner Ups'
+            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Total')
         elif view_by == 'money':
             head_str = ' Earnings'
+            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Ryder Cup', 'Total')
         results = get_igf_results(view_by)
-        igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Total')
     else:
         results=()
         igf_heads=()

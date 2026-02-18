@@ -241,7 +241,7 @@ def get_igf_results(view_by):
         with engine.connect() as conn:
             result = conn.execute('''select * from igf_payouts''')
             results = result.fetchall()
-            data_table=pd.DataFrame(results, columns=['igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british', 'cum'])
+            data_table=pd.DataFrame(results, columns=['igf_golfer', 'tpc', 'masters', 'pga', 'us', 'british', 'cum', 'ryder'])
             data_table.fillna(0, inplace=True)
             data_table['total'] = data_table.drop('igf_golfer', axis=1).sum(axis=1)
             data_table['tpc'] = data_table['tpc'].astype(int).apply(lambda x: "${:,}".format(x))
@@ -250,6 +250,7 @@ def get_igf_results(view_by):
             data_table['us'] = data_table['us'].astype(int).apply(lambda x: "${:,}".format(x))
             data_table['british'] = data_table['british'].astype(int).apply(lambda x: "${:,}".format(x))
             data_table['cum'] = data_table['cum'].astype(int).apply(lambda x: "${:,}".format(x))
+            data_table['ryder'] = data_table['ryder'].astype(int).apply(lambda x: "${:,}".format(x))
             data_table['total'] = data_table['total'].astype(int).apply(lambda x: "${:,}".format(x))
             
     elif view_by == 'first':
@@ -924,7 +925,7 @@ def get_igf_profile_data(igf_name):
     # Get total earnings
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COALESCE(tpc_payout,0) + COALESCE(master_payout,0) + COALESCE(pga_payout,0) + COALESCE(us_payout,0) + COALESCE(open_payout,0) + COALESCE(cum_payout,0) FROM igf_payouts WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+            "SELECT COALESCE(tpc_payout,0) + COALESCE(master_payout,0) + COALESCE(pga_payout,0) + COALESCE(us_payout,0) + COALESCE(open_payout,0) + COALESCE(cum_payout,0) + COALESCE(ryder_payout,0) FROM igf_payouts WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
         total = row[0] if row and row[0] else 0
@@ -1063,7 +1064,8 @@ def get_igf_profile_data(igf_name):
                 COALESCE(pga_payout, 0) as pga,
                 COALESCE(us_payout, 0) as us_open,
                 COALESCE(open_payout, 0) as open_champ,
-                COALESCE(cum_payout, 0) as cum
+                COALESCE(cum_payout, 0) as cum,
+                COALESCE(ryder_payout, 0) as ryder
             FROM igf_payouts
             WHERE igf_golfer = '""" + igf_name.replace("'", "''") + """'
         """)
@@ -1075,12 +1077,13 @@ def get_igf_profile_data(igf_name):
                 'pga': "${:,}".format(int(row[2])),
                 'us_open': "${:,}".format(int(row[3])),
                 'open_champ': "${:,}".format(int(row[4])),
-                'cum': "${:,}".format(int(row[5]))
+                'cum': "${:,}".format(int(row[5])),
+                'ryder': "${:,}".format(int(row[6]))
             }
         else:
             profile['earnings_breakdown'] = {
                 'tpc': "$0", 'masters': "$0", 'pga': "$0", 
-                'us_open': "$0", 'open_champ': "$0", 'cum': "$0"
+                'us_open': "$0", 'open_champ': "$0", 'cum': "$0", 'ryder': "$0"
             }
     
     # Get wins breakdown by tournament from igf_winners table
@@ -1190,13 +1193,13 @@ def get_igf_member_summary():
                 COALESCE(SUM(CASE WHEN l.igf_rank = 1 THEN 1 ELSE 0 END), 0) as wins,
                 COALESCE(SUM(CASE WHEN l.igf_rank = 2 THEN 1 ELSE 0 END), 0) as runner_ups,
                 COALESCE(p.tpc_payout, 0) + COALESCE(p.master_payout, 0) + COALESCE(p.pga_payout, 0) + 
-                COALESCE(p.us_payout, 0) + COALESCE(p.open_payout, 0) + COALESCE(p.cum_payout, 0) as total_earnings
+                COALESCE(p.us_payout, 0) + COALESCE(p.open_payout, 0) + COALESCE(p.cum_payout, 0) + COALESCE(p.ryder_payout, 0) as total_earnings
             FROM draft_results d
             LEFT JOIN igf_leaderboards l ON d.igf_golfer = l.igf_golfer 
                 AND d.draft_year = l.draft_year 
                 AND d.tournament = l.tournament
             LEFT JOIN igf_payouts p ON d.igf_golfer = p.igf_golfer
-            GROUP BY d.igf_golfer, p.tpc_payout, p.master_payout, p.pga_payout, p.us_payout, p.open_payout, p.cum_payout
+            GROUP BY d.igf_golfer, p.tpc_payout, p.master_payout, p.pga_payout, p.us_payout, p.open_payout, p.cum_payout, p.ryder_payout
             ORDER BY total_earnings DESC NULLS LAST
         """)
         rows = result.fetchall()

@@ -39,6 +39,8 @@
                       		<th style="text-align:center"><img src="{{url_for('static',filename='images/open_championship.png') }}" style="height:100px"/> </th>
 			{% elif header == 'CUM' %}
                       		<th style="text-align:center"><img src="{{url_for('static',filename='images/cum.png') }}" style="height:100px"/> </th>
+			{% elif header == 'Ryder Cup' %}
+                      		<th style="text-align:center"><img src="{{url_for('static',filename='images/ryder_cup.png') }}" style="height:100px" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=font-size:14px;font-weight:bold>Ryder Cup</span>'"/> </th>
 				{% else %}
 					<th></th>
 			      {% endif %}
