@@ -154,3 +154,43 @@ table.sortable tr:hover {
 .select2-container {
   width: 100% !important;
 }
+
+/* IGF Profile Links */
+.igf-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.igf-link:hover {
+  color: var(--dark);
+  text-decoration: underline;
+}
+
+/* IGF Avatar in tables */
+.igf-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+  vertical-align: middle;
+  background-color: #f0f0f0;
+}
+.igf-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  vertical-align: middle;
+  border: 2px solid var(--primary);
+}
