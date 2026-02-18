@@ -142,7 +142,7 @@ def golfer_search():
 @app.route('/champions', methods=["GET"])
 def champions():
     champs = get_champions()
-    champ_heads = ('Year','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship')
+    champ_heads = ('Year','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship','Ryder Cup')
     return(render_template('champions.html',
                            champs=champs,
                            champ_heads=champ_heads))
@@ -153,10 +153,10 @@ def igf_results():
         view_by = request.form.get("view_by")
         if view_by == 'first':
             head_str = ' Winners'
-            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Total')
+            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Ryder Cup', 'Total')
         elif view_by == 'second':
             head_str = ' Runner Ups'
-            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Total')
+            igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Ryder Cup', 'Total')
         elif view_by == 'money':
             head_str = ' Earnings'
             igf_heads = ('Golfer','THE PLAYERS Championship','The Masters','PGA Championship','U.S. Open','The Open Championship', 'CUM', 'Ryder Cup', 'Total')
