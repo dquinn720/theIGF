@@ -16,11 +16,51 @@
 </head>
 <body>
 
-  <!-- Logo/Header -->
-  <header class="header-image"></header>
+  <!-- Mobile Header with Logo and Hamburger -->
+  <header class="mobile-header">
+    <a href="javascript:void(0);" class="hamburger-btn" onclick="toggleNav()">
+      <i class="fa fa-bars"></i>
+    </a>
+    <a href="/" class="logo-link">
+      <img src="{{ url_for('static', filename='images/IGF_Logo.png') }}" alt="IGF Logo" class="header-logo">
+    </a>
+    <div class="header-spacer"></div>
+  </header>
 
-  <!-- Responsive Top Navigation -->
-  <nav class="topnav" id="myTopnav">
+  <!-- Desktop Header (logo only, nav below) -->
+  <header class="desktop-header">
+    <img src="{{ url_for('static', filename='images/IGF_Logo.png') }}" alt="IGF Logo" class="header-logo-desktop">
+  </header>
+
+  <!-- Mobile Slide-out Navigation -->
+  <div class="mobile-nav-overlay" id="navOverlay" onclick="closeNav()"></div>
+  <nav class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-header">
+      <span>Menu</span>
+      <a href="javascript:void(0);" class="close-btn" onclick="closeNav()">
+        <i class="fa fa-times"></i>
+      </a>
+    </div>
+    <a href="/" class="{% if request.path=='/' %}active{% endif %}">Current Board</a>
+    <a href="/past" class="{% if request.path=='/past' %}active{% endif %}">Past Boards</a>
+    <a href="/igf_members" class="{% if request.path=='/igf_members' %}active{% endif %}">IGF Members</a>
+    <a href="/golfer_results" class="{% if request.path=='/golfer_results' %}active{% endif %}">Golfer Profiles</a>
+    
+    <div class="mobile-subnav">
+      <a href="javascript:void(0);" class="mobile-subnav-btn" onclick="toggleSubnav()">
+        IGF Stats <i class="fa fa-caret-down" id="subnavCaret"></i>
+      </a>
+      <div class="mobile-subnav-content" id="subnavContent">
+        <a href="/champions">Champions</a>
+        <a href="/igf_results">IGF Results</a>
+        <a href="/cum">CUM</a>
+        <a href="/hard_on">HARD ON</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Desktop Navigation -->
+  <nav class="desktop-nav">
     <a href="/" class="{% if request.path=='/' %}active{% endif %}">Current Board</a>
     <a href="/past" class="{% if request.path=='/past' %}active{% endif %}">Past Boards</a>
     <a href="/igf_members" class="{% if request.path=='/igf_members' %}active{% endif %}">IGF Members</a>
@@ -35,26 +75,41 @@
         <a href="/hard_on">HARD ON</a>
       </div>
     </div>
-
-    <!-- Hamburger for mobile -->
-    <a href="javascript:void(0);" class="icon" onclick="toggleNav()">
-      <i class="fa fa-bars"></i>
-    </a>
   </nav>
 
-
   {% block scripts %}
-    <!-- Core JS libs -->
+  <!-- Core JS libs -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
   <script src="{{ url_for('static', filename='sorttable.js') }}"></script>
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-
-  <!-- Navigation toggle + Select2 init -->
+  <!-- Navigation scripts -->
   <script>
   function toggleNav() {
-    document.getElementById("myTopnav").classList.toggle("responsive");
+    document.getElementById("mobileNav").classList.add("open");
+    document.getElementById("navOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  
+  function closeNav() {
+    document.getElementById("mobileNav").classList.remove("open");
+    document.getElementById("navOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  
+  function toggleSubnav() {
+    var content = document.getElementById("subnavContent");
+    var caret = document.getElementById("subnavCaret");
+    if (content.classList.contains("open")) {
+      content.classList.remove("open");
+      caret.classList.remove("fa-caret-up");
+      caret.classList.add("fa-caret-down");
+    } else {
+      content.classList.add("open");
+      caret.classList.remove("fa-caret-down");
+      caret.classList.add("fa-caret-up");
+    }
   }
   </script>
 
@@ -64,14 +119,14 @@
       width: '200px',
       placeholder: 'Search…',
       allowClear: true,
-      minimumResultsForSearch: 0   // 0 = always show the search box
+      minimumResultsForSearch: 0
     });
   });
-</script>
+  </script>
   
   {% endblock %}
 
-    <!-- Page content -->
+  <!-- Page content -->
   <main class="container my-4">
     {% block content %}{% endblock %}
   </main>
