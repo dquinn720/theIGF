@@ -1589,18 +1589,8 @@ def search_golfers(query):
     safe_query = query.replace("'", "''").lower()
     
     with engine.connect() as conn:
-        result = conn.execute("""
-            SELECT DISTINCT p.dg_id, p.player_name, p.country
-            FROM pga_golfers p
-            WHERE LOWER(p.player_name) LIKE '%""" + safe_query + """%'
-            ORDER BY 
-                CASE WHEN LOWER(p.player_name) LIKE '""" + safe_query + """%' THEN 0 ELSE 1 END,
-                p.player_name
-            LIMIT 10
-        """)
+        result = conn.execute("SELECT DISTINCT dg_id, player_name, country FROM pga_golfers WHERE LOWER(player_name) LIKE '%" + safe_query + "%' ORDER BY player_name LIMIT 10")
         rows = result.fetchall()
-    
-    conn.close()
     
     return [
         {
