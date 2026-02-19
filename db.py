@@ -956,10 +956,13 @@ def get_igf_profile_data(igf_name):
     # Get wins count from igf_winners table (sum all tournament wins)
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+            "SELECT * FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
-        base_wins = row[0] if row and row[0] else 0
+        if row:
+            base_wins = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+        else:
+            base_wins = 0
     
     # Add Ryder Cup wins from special_results
     with engine.connect() as conn:
@@ -974,10 +977,13 @@ def get_igf_profile_data(igf_name):
     # Get runner-ups count from igf_runner_ups table
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+            "SELECT * FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
-        base_runner_ups = row[0] if row and row[0] else 0
+        if row:
+            base_runner_ups = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+        else:
+            base_runner_ups = 0
     
     # Add Ryder Cup runner-ups from special_results
     with engine.connect() as conn:
