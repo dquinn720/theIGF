@@ -944,21 +944,41 @@ def get_igf_profile_data(igf_name):
         row = result.fetchone()
         profile['tournaments_played'] = row[0] if row else 0
     
-    # Get wins count from igf_leaderboards
+    # Get wins count from igf_winners table (sum all tournament wins)
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COUNT(*) FROM igf_leaderboards WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 1"
+            "SELECT COALESCE(tpc_wins,0) + COALESCE(masters_wins,0) + COALESCE(pga_wins,0) + COALESCE(us_wins,0) + COALESCE(british_wins,0) FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
-        profile['total_wins'] = row[0] if row else 0
+        base_wins = row[0] if row and row[0] else 0
     
-    # Get runner-ups count
+    # Add Ryder Cup wins from special_results
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COUNT(*) FROM igf_leaderboards WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 2"
+            "SELECT COUNT(*) FROM special_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 1"
         )
         row = result.fetchone()
-        profile['total_runner_ups'] = row[0] if row else 0
+        ryder_wins = row[0] if row else 0
+    
+    profile['total_wins'] = base_wins + ryder_wins
+    
+    # Get runner-ups count from igf_runner_ups table
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COALESCE(tpc_runner_ups,0) + COALESCE(masters_runner_ups,0) + COALESCE(pga_runner_ups,0) + COALESCE(us_runner_ups,0) + COALESCE(british_runner_ups,0) FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        base_runner_ups = row[0] if row and row[0] else 0
+    
+    # Add Ryder Cup runner-ups from special_results
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(*) FROM special_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "' AND igf_rank = 2"
+        )
+        row = result.fetchone()
+        ryder_runner_ups = row[0] if row else 0
+    
+    profile['total_runner_ups'] = base_runner_ups + ryder_runner_ups
     
     # Get CUM wins from cum_leaderboard table
     with engine.connect() as conn:
