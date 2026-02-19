@@ -1,6 +1,134 @@
 {% extends "layout.html" %}
 {% block title %}Current Board{% endblock %}
 
+{% block head %}
+<style>
+  /* Enhanced Select2 Styling for Draft Picker */
+  .draft-picker-container {
+    max-width: 400px;
+    margin-bottom: 15px;
+  }
+  
+  .draft-picker-container .select2-container--default .select2-selection--single {
+    height: 48px;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    padding: 8px 15px;
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .draft-picker-container .select2-container--default .select2-selection--single:focus,
+  .draft-picker-container .select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #2c5282;
+    box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+  }
+  
+  .draft-picker-container .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 30px;
+    padding-left: 5px;
+    color: #333;
+  }
+  
+  .draft-picker-container .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 46px;
+    right: 10px;
+  }
+  
+  /* Dropdown styling */
+  .select2-container--default .select2-results__option {
+    padding: 10px 15px;
+  }
+  
+  .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #f0f7ff;
+    color: #2c5282;
+  }
+  
+  .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #2c5282;
+    color: white;
+  }
+  
+  /* Search box in dropdown */
+  .select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 2px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+  
+  .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #2c5282;
+    outline: none;
+  }
+  
+  .select2-dropdown {
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    margin-top: 5px;
+  }
+  
+  /* Golfer option with avatar */
+  .golfer-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .golfer-option-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #2c5282;
+    background-color: #e8f0f8;
+  }
+  
+  .golfer-option-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #2c5282;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  
+  .golfer-option-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  /* Submit button styling */
+  .draft-submit-btn {
+    background: #2c5282;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+  
+  .draft-submit-btn:hover {
+    background: #1a365d;
+    transform: translateY(-1px);
+  }
+  
+  .draft-submit-btn:active {
+    transform: translateY(0);
+  }
+</style>
+{% endblock %}
+
 {% block content %}
   <section class="mb-5" {{ visability | safe}}>
     <p><strong>
@@ -10,16 +138,18 @@
 
     <form action="{{ url_for('current') }}" method="post"
           onsubmit="return confirm('Are you sure you want to make this draft pick?')">
-      <div class="form-row align-items-center">
-        <label for="golferDraft" class="mr-2" {{ visability | safe }}>Golfer to Draft:</label>
-        <select name="golfer" id="golferDraft"
-                class="js-example-basic-single" {{ visability | safe }}>
-                {% if golferList|length <= 1 %} disabled {% endif %}>
-                {% for golfer in golferList %}
-                  <option value="{{ golfer.dg_id }}">{{ golfer.player_name }}</option>
-                {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-primary mb-2" {{ visability | safe }}>
+      <div {{ visability | safe }}>
+        <label for="golferDraft" style="display: block; margin-bottom: 8px; font-weight: 500;">Golfer to Draft:</label>
+        <div class="draft-picker-container">
+          <select name="golfer" id="golferDraft"
+                  class="golfer-select" {{ visability | safe }}
+                  {% if golferList|length <= 1 %} disabled {% endif %}>
+                  {% for golfer in golferList %}
+                    <option value="{{ golfer.dg_id }}" data-image="{{ url_for('static', filename='images/' ~ golfer.dg_id ~ '.png') }}">{{ golfer.player_name }}</option>
+                  {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="draft-submit-btn" {{ visability | safe }}>
           Submit Pick
         </button>
       </div>
@@ -131,4 +261,41 @@
       </table>
     </div>
   </section>
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+  // Custom formatting for Select2 options with avatars
+  function formatGolfer(golfer) {
+    if (!golfer.id) {
+      return golfer.text;
+    }
+    
+    var imageUrl = $(golfer.element).data('image');
+    var initials = golfer.text.split(' ').map(function(n) { return n[0]; }).join('').substring(0, 2);
+    
+    var $golfer = $(
+      '<div class="golfer-option">' +
+        '<img class="golfer-option-avatar" src="' + imageUrl + '" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+        '<span class="golfer-option-placeholder" style="display:none;">' + initials + '</span>' +
+        '<span class="golfer-option-name">' + golfer.text + '</span>' +
+      '</div>'
+    );
+    
+    return $golfer;
+  }
+  
+  // Initialize Select2 with custom template
+  $('.golfer-select').select2({
+    templateResult: formatGolfer,
+    templateSelection: formatGolfer,
+    placeholder: 'Search for a golfer...',
+    allowClear: false,
+    width: '100%',
+    dropdownAutoWidth: false
+  });
+});
+</script>
+{% endblock %}
 {% endblock %}
