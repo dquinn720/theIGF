@@ -1287,42 +1287,42 @@ def get_igf_member_summary():
         """)
         base_rows = result.fetchall()
     
-    # Get wins from igf_winners
-    with engine.connect() as conn:
-        result = conn.execute("""
-            SELECT igf_golfer, COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) as wins
-            FROM igf_winners
-        """)
-        wins_rows = result.fetchall()
-    wins_dict = {row[0]: row[1] for row in wins_rows}
+        # Get wins from igf_winners (select * then use pandas to sum)
+        result = conn.execute('''select * from igf_winners''')
+        wins_data = result.fetchall()
+    # Columns: igf_golfer, tpc, masters, pga, us, british, cum
+    wins_dict = {}
+    for row in wins_data:
+        total = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+        wins_dict[row[0]] = total
     
-    # Get runner-ups from igf_runner_ups
     with engine.connect() as conn:
-        result = conn.execute("""
-            SELECT igf_golfer, COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) as runner_ups
-            FROM igf_runner_ups
-        """)
-        runner_ups_rows = result.fetchall()
-    runner_ups_dict = {row[0]: row[1] for row in runner_ups_rows}
+        # Get runner-ups from igf_runner_ups
+        result = conn.execute('''select * from igf_runner_ups''')
+        runner_ups_data = result.fetchall()
+    runner_ups_dict = {}
+    for row in runner_ups_data:
+        total = sum([x or 0 for x in row[1:]])
+        runner_ups_dict[row[0]] = total
     
-    # Get Ryder Cup wins from special_results
     with engine.connect() as conn:
+        # Get Ryder Cup wins from special_results
         result = conn.execute("""
             SELECT igf_golfer, COUNT(*) as wins FROM special_results WHERE igf_rank = 1 GROUP BY igf_golfer
         """)
         ryder_wins_rows = result.fetchall()
     ryder_wins_dict = {row[0]: row[1] for row in ryder_wins_rows}
     
-    # Get Ryder Cup runner-ups from special_results
     with engine.connect() as conn:
+        # Get Ryder Cup runner-ups from special_results
         result = conn.execute("""
             SELECT igf_golfer, COUNT(*) as runner_ups FROM special_results WHERE igf_rank = 2 GROUP BY igf_golfer
         """)
         ryder_runner_ups_rows = result.fetchall()
     ryder_runner_ups_dict = {row[0]: row[1] for row in ryder_runner_ups_rows}
     
-    # Get special tournaments count per member
     with engine.connect() as conn:
+        # Get special tournaments count per member
         result = conn.execute("""
             SELECT igf_golfer, COUNT(DISTINCT draft_year || tournament) as special_tournaments 
             FROM special_results 
