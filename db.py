@@ -953,14 +953,14 @@ def get_igf_profile_data(igf_name):
     
     profile['tournaments_played'] = base_tournaments + special_tournaments
     
-    # Get wins count from igf_winners table (sum all tournament wins)
+    # Get wins count from igf_winners table (sum all tournament wins, excluding CUM)
     with engine.connect() as conn:
         result = conn.execute(
             "SELECT * FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
         if row:
-            base_wins = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+            base_wins = sum([x or 0 for x in row[1:-1]])  # Sum all columns except igf_golfer and cum (last column)
         else:
             base_wins = 0
     
@@ -974,14 +974,14 @@ def get_igf_profile_data(igf_name):
     
     profile['total_wins'] = base_wins + ryder_wins
     
-    # Get runner-ups count from igf_runner_ups table
+    # Get runner-ups count from igf_runner_ups table (excluding CUM)
     with engine.connect() as conn:
         result = conn.execute(
             "SELECT * FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
         if row:
-            base_runner_ups = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+            base_runner_ups = sum([x or 0 for x in row[1:-1]])  # Exclude cum (last column)
         else:
             base_runner_ups = 0
     
@@ -1293,22 +1293,22 @@ def get_igf_member_summary():
         """)
         base_rows = result.fetchall()
     
-        # Get wins from igf_winners (select * then use pandas to sum)
+        # Get wins from igf_winners (select * then sum, excluding cum which is last column)
         result = conn.execute('''select * from igf_winners''')
         wins_data = result.fetchall()
     # Columns: igf_golfer, tpc, masters, pga, us, british, cum
     wins_dict = {}
     for row in wins_data:
-        total = sum([x or 0 for x in row[1:]])  # Sum all columns except igf_golfer
+        total = sum([x or 0 for x in row[1:-1]])  # Sum all columns except igf_golfer and cum (last column)
         wins_dict[row[0]] = total
     
     with engine.connect() as conn:
-        # Get runner-ups from igf_runner_ups
+        # Get runner-ups from igf_runner_ups (excluding cum)
         result = conn.execute('''select * from igf_runner_ups''')
         runner_ups_data = result.fetchall()
     runner_ups_dict = {}
     for row in runner_ups_data:
-        total = sum([x or 0 for x in row[1:]])
+        total = sum([x or 0 for x in row[1:-1]])  # Exclude cum (last column)
         runner_ups_dict[row[0]] = total
     
     with engine.connect() as conn:
