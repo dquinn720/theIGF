@@ -114,8 +114,14 @@
     
     .two-column {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        grid-template-columns: 2fr 1fr;
         gap: 20px;
+    }
+    
+    @media (max-width: 900px) {
+        .two-column {
+            grid-template-columns: 1fr;
+        }
     }
     
     .three-column {
@@ -484,9 +490,54 @@
 
 <!-- Two Column Section -->
 <div class="two-column">
+    <!-- Full Tournament History (scrollable) -->
+    <div>
+        <h2 class="section-title">Full Tournament History</h2>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Tournament</th>
+                        <th>Finish</th>
+                        <th>IGF</th>
+                        <th>Drafted By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in profile.tournament_history %}
+                    <tr>
+                        <td>{{ row.year }}</td>
+                        <td>{{ row.tournament }}</td>
+                        <td>
+                            {% if row.position == '1' or row.position == 'T1' %}
+                                <span class="position-badge position-1">🏆</span>
+                            {% elif row.position in ['CUT', 'WD', 'DQ', 'MDF'] %}
+                                <span class="position-badge position-cut">{{ row.position }}</span>
+                            {% else %}
+                                {{ row.position }}
+                            {% endif %}
+                        </td>
+                        <td>{{ row.igf_score if row.igf_score else '-' }}</td>
+                        <td>
+                            {% if row.drafted_by != '-' %}
+                                <a href="{{ url_for('igf_profile', igf_name=row.drafted_by) }}" class="igf-link">
+                                    {{ row.drafted_by }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Who Drafts This Golfer -->
     <div>
-        <h2 class="section-title">Drafted By</h2>
+        <h2 class="section-title">Who Drafts This Golfer</h2>
         <table>
             <thead>
                 <tr>
@@ -512,51 +563,6 @@
                 {% endif %}
             </tbody>
         </table>
-    </div>
-    
-    <!-- Full Tournament History (scrollable) -->
-    <div>
-        <h2 class="section-title">Full Tournament History</h2>
-        <div style="max-height: 400px; overflow-y: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Year</th>
-                        <th>Tournament</th>
-                        <th>Finish</th>
-                        <th>IGF</th>
-                        <th>By</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in profile.tournament_history %}
-                    <tr>
-                        <td>{{ row.year }}</td>
-                        <td>{{ row.tournament[:15] }}{% if row.tournament|length > 15 %}...{% endif %}</td>
-                        <td>
-                            {% if row.position == '1' or row.position == 'T1' %}
-                                <span class="position-badge position-1">🏆</span>
-                            {% elif row.position in ['CUT', 'WD', 'DQ', 'MDF'] %}
-                                <span class="position-badge position-cut">{{ row.position }}</span>
-                            {% else %}
-                                {{ row.position }}
-                            {% endif %}
-                        </td>
-                        <td>{{ row.igf_score if row.igf_score else '-' }}</td>
-                        <td>
-                            {% if row.drafted_by != '-' %}
-                                <a href="{{ url_for('igf_profile', igf_name=row.drafted_by) }}" class="igf-link">
-                                    {{ row.drafted_by.split()[0] }}
-                                </a>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
     </div>
 </div>
 
