@@ -936,18 +936,27 @@ def get_igf_profile_data(igf_name):
         row = result.fetchone()
         profile['first_year'] = row[0] if row else 'N/A'
     
-    # Get total tournaments played
+    # Get total tournaments played (regular + special)
     with engine.connect() as conn:
         result = conn.execute(
             "SELECT COUNT(DISTINCT draft_year || tournament) FROM draft_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
-        profile['tournaments_played'] = row[0] if row else 0
+        base_tournaments = row[0] if row else 0
+    
+    with engine.connect() as conn:
+        result = conn.execute(
+            "SELECT COUNT(DISTINCT draft_year || tournament) FROM special_results WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+        )
+        row = result.fetchone()
+        special_tournaments = row[0] if row else 0
+    
+    profile['tournaments_played'] = base_tournaments + special_tournaments
     
     # Get wins count from igf_winners table (sum all tournament wins)
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COALESCE(tpc_wins,0) + COALESCE(masters_wins,0) + COALESCE(pga_wins,0) + COALESCE(us_wins,0) + COALESCE(british_wins,0) FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+            "SELECT COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) FROM igf_winners WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
         base_wins = row[0] if row and row[0] else 0
@@ -965,7 +974,7 @@ def get_igf_profile_data(igf_name):
     # Get runner-ups count from igf_runner_ups table
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT COALESCE(tpc_runner_ups,0) + COALESCE(masters_runner_ups,0) + COALESCE(pga_runner_ups,0) + COALESCE(us_runner_ups,0) + COALESCE(british_runner_ups,0) FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
+            "SELECT COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) FROM igf_runner_ups WHERE igf_golfer = '" + igf_name.replace("'", "''") + "'"
         )
         row = result.fetchone()
         base_runner_ups = row[0] if row and row[0] else 0
@@ -1261,37 +1270,79 @@ def get_igf_member_summary():
     Get summary stats for all IGF members for the members listing page.
     """
     engine = connect_tcp_socket()
+    
+    # Get base member info and earnings
     with engine.connect() as conn:
         result = conn.execute("""
             SELECT 
                 d.igf_golfer,
                 MIN(d.draft_year) as first_year,
                 COUNT(DISTINCT d.draft_year || d.tournament) as tournaments_played,
-                COALESCE(SUM(CASE WHEN l.igf_rank = 1 THEN 1 ELSE 0 END), 0) as wins,
-                COALESCE(SUM(CASE WHEN l.igf_rank = 2 THEN 1 ELSE 0 END), 0) as runner_ups,
                 COALESCE(p.tpc_payout, 0) + COALESCE(p.master_payout, 0) + COALESCE(p.pga_payout, 0) + 
                 COALESCE(p.us_payout, 0) + COALESCE(p.open_payout, 0) + COALESCE(p.cum_payout, 0) + COALESCE(p.ryder_payout, 0) as total_earnings
             FROM draft_results d
-            LEFT JOIN igf_leaderboards l ON d.igf_golfer = l.igf_golfer 
-                AND d.draft_year = l.draft_year 
-                AND d.tournament = l.tournament
             LEFT JOIN igf_payouts p ON d.igf_golfer = p.igf_golfer
             GROUP BY d.igf_golfer, p.tpc_payout, p.master_payout, p.pga_payout, p.us_payout, p.open_payout, p.cum_payout, p.ryder_payout
             ORDER BY total_earnings DESC NULLS LAST
         """)
-        rows = result.fetchall()
-        members = [
-            {
-                'name': row[0],
-                'first_year': row[1],
-                'tournaments_played': row[2],
-                'wins': row[3],
-                'runner_ups': row[4],
-                'total_earnings': "${:,}".format(int(row[5])) if row[5] else "$0"
-            }
-            for row in rows
-        ]
-    conn.close()
+        base_rows = result.fetchall()
+    
+    # Get wins from igf_winners
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) as wins
+            FROM igf_winners
+        """)
+        wins_rows = result.fetchall()
+    wins_dict = {row[0]: row[1] for row in wins_rows}
+    
+    # Get runner-ups from igf_runner_ups
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COALESCE(tpc,0) + COALESCE(masters,0) + COALESCE(pga,0) + COALESCE(us,0) + COALESCE(british,0) as runner_ups
+            FROM igf_runner_ups
+        """)
+        runner_ups_rows = result.fetchall()
+    runner_ups_dict = {row[0]: row[1] for row in runner_ups_rows}
+    
+    # Get Ryder Cup wins from special_results
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COUNT(*) as wins FROM special_results WHERE igf_rank = 1 GROUP BY igf_golfer
+        """)
+        ryder_wins_rows = result.fetchall()
+    ryder_wins_dict = {row[0]: row[1] for row in ryder_wins_rows}
+    
+    # Get Ryder Cup runner-ups from special_results
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COUNT(*) as runner_ups FROM special_results WHERE igf_rank = 2 GROUP BY igf_golfer
+        """)
+        ryder_runner_ups_rows = result.fetchall()
+    ryder_runner_ups_dict = {row[0]: row[1] for row in ryder_runner_ups_rows}
+    
+    # Get special tournaments count per member
+    with engine.connect() as conn:
+        result = conn.execute("""
+            SELECT igf_golfer, COUNT(DISTINCT draft_year || tournament) as special_tournaments 
+            FROM special_results 
+            GROUP BY igf_golfer
+        """)
+        special_tournaments_rows = result.fetchall()
+    special_tournaments_dict = {row[0]: row[1] for row in special_tournaments_rows}
+    
+    members = [
+        {
+            'name': row[0],
+            'first_year': row[1],
+            'tournaments_played': row[2] + special_tournaments_dict.get(row[0], 0),
+            'wins': wins_dict.get(row[0], 0) + ryder_wins_dict.get(row[0], 0),
+            'runner_ups': runner_ups_dict.get(row[0], 0) + ryder_runner_ups_dict.get(row[0], 0),
+            'total_earnings': "${:,}".format(int(row[3])) if row[3] else "$0"
+        }
+        for row in base_rows
+    ]
+    
     return members
 
 
